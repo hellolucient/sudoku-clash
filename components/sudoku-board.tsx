@@ -77,95 +77,44 @@ export default function SudokuBoard({
     return "bg-[#F9EED7] hover:bg-[#F5DFB3]"
   }
 
-  // Get position-based styling for the cell
-  const getCellPosition = (row: number, col: number) => {
-    const classes = []
+  // Group the cells into 3x3 boxes for better rendering
+  const renderBoxes = () => {
+    const boxes = [];
     
-    // Add margin to create gaps between 3x3 boxes
-    if ((col + 1) % 3 === 0 && col < 8) {
-      classes.push("mr-[2px]") // Add right margin for cells at the end of 3x3 boxes (except last column)
-    }
-    
-    if ((row + 1) % 3 === 0 && row < 8) {
-      classes.push("mb-[2px]") // Add bottom margin for cells at the bottom of 3x3 boxes (except last row)
-    }
-    
-    return classes.join(" ")
-  }
-
-  // Get border styling for cells
-  const getCellBorders = (row: number, col: number) => {
-    const classes = []
-    
-    // Right borders
-    if (col < 8) {
-      if ((col + 1) % 3 === 0) {
-        classes.push("border-r-[2px] border-r-[#8C653C]")
-      } else {
-        classes.push("border-r-[1px] border-r-[#D2B48C]")
-      }
-    }
-    
-    // Bottom borders
-    if (row < 8) {
-      if ((row + 1) % 3 === 0) {
-        classes.push("border-b-[2px] border-b-[#8C653C]")
-      } else {
-        classes.push("border-b-[1px] border-b-[#D2B48C]")
-      }
-    }
-
-    // Add right edge
-    if (col === 8) {
-      classes.push("border-r-[1px] border-r-[#8C653C]")
-    }
-
-    // Add bottom edge
-    if (row === 8) {
-      classes.push("border-b-[1px] border-b-[#8C653C]")
-    }
-    
-    return classes.join(" ")
-  }
-
-  // Update the return statement to use our wooden board style with gaps
-  return (
-    <div className="wooden-border p-[6px] rounded-lg shadow-xl overflow-hidden bg-[#B58853]">
-      <div className="grid grid-cols-9 gap-0 bg-[#8C653C]">
-        {board.map((row, rowIndex) =>
-          row.map((cell, colIndex) => {
-            const isInvalid = isInvalidCell(rowIndex, colIndex)
-            const isCompleted = isInCompletedSection(rowIndex, colIndex)
-
-            // Calculate the 3x3 box this cell belongs to
-            const boxRow = Math.floor(rowIndex / 3)
-            const boxCol = Math.floor(colIndex / 3)
-
-            return (
+    for (let boxRow = 0; boxRow < 3; boxRow++) {
+      for (let boxCol = 0; boxCol < 3; boxCol++) {
+        const cells = [];
+        
+        for (let cellRow = 0; cellRow < 3; cellRow++) {
+          for (let cellCol = 0; cellCol < 3; cellCol++) {
+            const row = boxRow * 3 + cellRow;
+            const col = boxCol * 3 + cellCol;
+            const isInvalid = isInvalidCell(row, col);
+            const isCompleted = isInCompletedSection(row, col);
+            
+            cells.push(
               <div
-                key={`${rowIndex}-${colIndex}`}
-                data-cell={`${rowIndex}-${colIndex}`}
+                key={`${row}-${col}`}
+                data-cell={`${row}-${col}`}
                 className={cn(
                   "aspect-square flex items-center justify-center text-sm md:text-lg font-bold",
-                  "transition-all duration-200 relative",
-                  getCellStyle(rowIndex, colIndex),
-                  getCellBorders(rowIndex, colIndex),
-                  getCellPosition(rowIndex, colIndex),
+                  "transition-all duration-200 relative border border-[#D2B48C]",
+                  getCellStyle(row, col),
                   // Cell state styling
-                  isSelectedCell(rowIndex, colIndex) &&
+                  isSelectedCell(row, col) &&
                     "ring-2 ring-[#F5BC41] z-10",
-                  isComputerSelectedCell(rowIndex, colIndex) &&
+                  isComputerSelectedCell(row, col) &&
                     "ring-2 ring-[#F37B60] z-10",
                   isInvalid && "ring-2 ring-red-500 z-10",
                   isCompleted && "animate-completed-cell",
-                  cell === null &&
+                  board[row][col] === null &&
                     !gameOver &&
                     currentPlayer === 0 &&
                     "cursor-pointer hover:bg-[#F5DFB3]",
                 )}
-                onClick={() => cell === null && !isInvalid && onCellSelect(rowIndex, colIndex)}
+                onClick={() => board[row][col] === null && !isInvalid && onCellSelect(row, col)}
               >
-                {isInvalid ? getInvalidCellValue() : cell !== null ? cell : ""}
+                {isInvalid ? getInvalidCellValue() : board[row][col] !== null ? board[row][col] : ""}
 
                 {/* Localized flash animation for invalid cells */}
                 {isInvalid && (
@@ -174,9 +123,26 @@ export default function SudokuBoard({
                   </div>
                 )}
               </div>
-            )
-          }),
-        )}
+            );
+          }
+        }
+        
+        boxes.push(
+          <div key={`box-${boxRow}-${boxCol}`} className="grid grid-cols-3 grid-rows-3">
+            {cells}
+          </div>
+        );
+      }
+    }
+    
+    return boxes;
+  };
+
+  // Update the return statement with a better grid structure
+  return (
+    <div className="wooden-border p-2 rounded-lg shadow-xl overflow-hidden bg-[#B58853]">
+      <div className="grid grid-cols-3 grid-rows-3 gap-[2px] bg-[#8C653C]">
+        {renderBoxes()}
       </div>
     </div>
   )
