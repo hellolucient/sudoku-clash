@@ -4,88 +4,199 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 30 40% 85%;  /* #E6D7C3 - warm beige for background */
+    --foreground: 30 70% 20%;  /* #4B3418 - dark brown text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 40 80% 92%;        /* #F9EED7 - light cream for cells */
+    --card-foreground: 30 70% 20%;  /* #4B3418 - dark brown text */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 40 80% 92%;     /* #F9EED7 - light cream */
+    --popover-foreground: 30 70% 20%;  /* #4B3418 - dark brown text */
 
-    --primary: 263 75% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 40 100% 60%;    /* #F5BC41 - golden yellow */
+    --primary-foreground: 30 70% 20%;  /* #4B3418 - dark brown */
 
-    --secondary: 190 80% 50%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 20 65% 50%;   /* #CC7A4D - warm terracotta */
+    --secondary-foreground: 40 80% 92%;  /* #F9EED7 - light cream */
 
-    --accent: 326 100% 60%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 10 79% 65%;      /* #F37B60 - coral accent */
+    --accent-foreground: 40 80% 92%;  /* #F9EED7 - light cream */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 30 30% 90%;       /* #EAE2D8 - muted beige */
+    --muted-foreground: 30 10% 40%;  /* #6E6356 - muted brown */
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 40 80% 92%;  /* #F9EED7 - light cream */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 30 50% 40%;      /* #8C653C - medium brown border */
+    --input: 30 50% 40%;       /* #8C653C - medium brown input */
+    --ring: 40 100% 60%;       /* #F5BC41 - golden yellow ring */
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 30 35% 25%;  /* #4D3C2A - dark wood */
+    --foreground: 40 30% 90%;  /* #E7DFD1 - light cream text */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 35 40% 35%;        /* #6D5A40 - medium wood */
+    --card-foreground: 40 30% 90%;  /* #E7DFD1 - light cream text */  
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 35 40% 35%;     /* #6D5A40 - medium wood */
+    --popover-foreground: 40 30% 90%;  /* #E7DFD1 - light cream text */
 
-    --primary: 263 75% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 40 80% 50%;     /* #D99C21 - darker gold */
+    --primary-foreground: 30 35% 25%;  /* #4D3C2A - dark wood */   
 
-    --secondary: 190 80% 50%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 20 50% 40%;   /* #A35F35 - darker terracotta */
+    --secondary-foreground: 40 30% 90%;  /* #E7DFD1 - light cream text */ 
 
-    --accent: 326 100% 60%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 10 60% 45%;      /* #B54F38 - deeper coral */
+    --accent-foreground: 40 30% 90%;  /* #E7DFD1 - light cream text */    
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 30 20% 30%;       /* #4F4334 - dark muted brown */
+    --muted-foreground: 30 15% 70%;  /* #C2B4A0 - light muted brown */     
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 40 30% 90%;  /* #E7DFD1 - light cream text */
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 30 40% 30%;      /* #5B4326 - dark brown border */  
+    --input: 30 40% 30%;       /* #5B4326 - dark brown input */
+    --ring: 40 80% 50%;        /* #D99C21 - darker gold */     
+
+    --radius: 0.5rem;
   }
 }
 
+/* Add wooden texture pattern to background */
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-purple-800 via-violet-700 to-indigo-800 text-foreground min-h-screen;
+    @apply bg-background text-foreground min-h-screen;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='none'/%3E%3Cpath d='M0 0h1v99h99v1H0z' fill='rgba(120, 80, 40, 0.1)'/%3E%3Cpath d='M0 0h100v25H75v25H50v25H25v25H0z' stroke='rgba(120, 80, 40, 0.05)' fill='none' stroke-width='1' /%3E%3C/svg%3E");
   }
+}
+
+/* Letter tile style for numbers */
+.number-tile {
+  position: relative;
+  background: linear-gradient(135deg, #E8B96F 0%, #D2954B 100%);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4);
+  color: #4B3418;
+  font-weight: bold;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+  border: 1px solid #B6843A;
+}
+
+.number-tile::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 5px 5px 0 0;
+  pointer-events: none;
+}
+
+/* Player hand tiles with vibrant colors like the Word Cookies game */
+.player-tile {
+  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3), inset 0 1px 3px rgba(255,255,255,0.5);
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.player-tile::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 10px 10px 0 0;
+  pointer-events: none;
+}
+
+.player-tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.5);
+}
+
+/* Colorful variants for player hand tiles */
+.player-tile-purple {
+  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+}
+
+.player-tile-blue {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.player-tile-green {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+}
+
+.player-tile-red {
+  background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);
+}
+
+.player-tile-orange {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+}
+
+.player-tile-pink {
+  background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+}
+
+.player-tile-teal {
+  background: linear-gradient(135deg, #009688 0%, #00796B 100%);
+}
+
+/* Notification banner styling for game messages */
+.game-notification {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-left: 5px solid #F5BC41;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: #4B3418;
+  font-weight: 500;
+}
+
+.game-notification-success {
+  border-left-color: #4CAF50;
+}
+
+.game-notification-warn {
+  border-left-color: #FF9800;
+}
+
+.game-notification-error {
+  border-left-color: #F44336;
 }
 
 @keyframes flash-number {
   0%,
   100% {
-    color: #ff2d55; /* bright pink */
+    color: #CC4B37; /* reddish orange */
     transform: scale(1);
-    text-shadow: 0 0 8px rgba(255, 45, 85, 0.7);
+    text-shadow: 0 0 8px rgba(204, 75, 55, 0.7);
   }
   50% {
-    color: #ff375f; /* brighter pink */
+    color: #FF5722; /* brighter orange */
     transform: scale(1.3);
-    text-shadow: 0 0 15px rgba(255, 45, 85, 0.9);
+    text-shadow: 0 0 15px rgba(255, 87, 34, 0.9);
   }
 }
 
@@ -98,14 +209,14 @@
   33%,
   66%,
   100% {
-    background-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 0 rgba(139, 92, 246, 0);
+    background: linear-gradient(135deg, #E8B96F 0%, #D2954B 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4);
   }
   16.5%,
   49.5%,
   82.5% {
-    background-color: rgba(167, 139, 250, 0.9);
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.8);
+    background: linear-gradient(135deg, #F9C95D 0%, #E6AB38 100%);
+    box-shadow: 0 0 15px rgba(245, 188, 65, 0.8), 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4);
   }
 }
 
@@ -116,10 +227,10 @@
 @keyframes pulse-glow {
   0%,
   100% {
-    box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 5px rgba(245, 188, 65, 0.5); /* #F5BC41 - golden */
   }
   50% {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    box-shadow: 0 0 20px rgba(245, 188, 65, 0.8);
   }
 }
 
@@ -151,18 +262,30 @@
 }
 
 .glass-effect {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.kraft-paper {
+  background-color: #E6D7C3;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zm20.97 0l9.315 9.314-1.414 1.414L34.828 0h2.83zM22.344 0L13.03 9.314l1.414 1.414L25.172 0h-2.83zM32 0l12.142 12.142-1.414 1.414L30 0h2zM27 0L14.858 12.142l1.414 1.414L29 0h-2zM16.737 0L0 16.737l1.414 1.414L18.15 0h-1.413zM47.263 0L64 16.737l-1.414 1.414L45.85 0h1.413zM0 5.373l5.373 5.373-1.414 1.414L0 8.2V5.374zm0 5.656L11.03 17.03l-1.414 1.414L0 13.858v-2.83zm0 5.657l16.686 16.686-1.414 1.414L0 19.514v-2.83zm0 5.657l22.344 22.343-1.414 1.414L0 25.172v-2.83zM0 27l27 27-1.414 1.414L0 30.828V27zm0 5.657l32.657 32.657-1.414 1.414L0 36.485v-2.83zm0 5.657L38.314 64l-1.414 1.414L0 42.142v-2.83zm0 5.657L43.97 64l-1.414 1.414L0 47.8v-2.83zm0 5.657L49.627 64l-1.414 1.414L0 53.456v-2.83zM64 5.373L58.627 0l-1.414 1.414 5.657 5.657h1.414zM64 11.03L52.97 0l-1.414 1.414 11.03 11.03h1.414zM64 16.686L47.314 0l-1.414 1.414 16.686 16.686h1.414zM64 22.343L41.657 0l-1.414 1.414 22.343 22.343h1.414zM64 27L37 0l-1.414 1.414L64 29.828V27zm0 5.657L31.343 0l-1.414 1.414L64 35.485v-2.83zm0 5.657L25.686 0l-1.414 1.414L64 41.142v-2.83zm0 5.657L20.03 0l-1.414 1.414L64 46.8v-2.83zm0 5.657L14.37 0l-1.414 1.414 49.8 49.8h1.414zM0 0l1.414 1.414 50.2-1.414L0 0zm64 64L62.586 62.586 12.386 64 64 64zm-42.74-9.9l2.83-2.83 1.414 1.415-2.83 2.83-1.414-1.414zm-8.902-8.9l2.828-2.83 1.414 1.416-2.828 2.828-1.414-1.414zm-8.9-8.902l2.828-2.828 1.414 1.414-2.83 2.83-1.413-1.416zm-8.902-8.9l2.83-2.83 1.413 1.416-2.83 2.83-1.413-1.416zm50.902 22.704l2.828-2.828 1.414 1.414-2.828 2.828-1.414-1.414zm-8.902-8.902l2.83-2.83 1.414 1.415-2.83 2.83-1.414-1.415zm-8.9-8.9l2.83-2.83 1.413 1.416-2.83 2.83-1.413-1.416zm-8.902-8.902l2.828-2.828 1.414 1.414-2.83 2.83-1.412-1.416zM64 14.4l-1.414-1.414-50.2 49.8 1.414 1.415L64 14.4zm0-4.9l-1.414-1.41-54 53.99 1.414 1.42L64 9.5z' fill='rgba(75, 52, 24, 0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.wooden-border {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2), 
+              inset 0 2px 3px rgba(255,255,255,0.3),
+              inset 0 -2px 3px rgba(0,0,0,0.1);
+  border: 2px solid #8C653C;
+  background: linear-gradient(to bottom, #B58853, #9E7142);
 }
 
 .neon-border {
-  box-shadow: 0 0 5px theme("colors.purple.500"), 0 0 10px theme("colors.purple.400"), 0 0 15px
-    theme("colors.purple.300");
+  box-shadow: 0 0 5px #F5BC41, 0 0 10px #F5BC41, 0 0 15px #F5BC41; /* #F5BC41 - golden */
 }
 
 .neon-text {
-  text-shadow: 0 0 5px theme("colors.purple.300"), 0 0 10px theme("colors.purple.200");
+  text-shadow: 0 0 5px #F5BC41, 0 0 10px #F5BC41;
 }
 

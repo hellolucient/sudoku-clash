@@ -66,65 +66,118 @@ export default function SudokuBoard({
     })
   }
 
-  // Update the getCellGradient function to provide better contrast
-  const getCellGradient = (row: number, col: number) => {
-    const boxRow = Math.floor(row / 3)
-    const boxCol = Math.floor(col / 3)
-
-    // Create alternating box colors with better contrast
-    if ((boxRow + boxCol) % 2 === 0) {
-      return "bg-gradient-to-br from-purple-100 to-purple-200"
-    } else {
-      return "bg-gradient-to-br from-indigo-100 to-indigo-200"
+  // Update the getCellStyle function to use our new wooden style
+  const getCellStyle = (row: number, col: number) => {
+    // Original cells use the golden letter tile style
+    if (board[row][col] !== null) {
+      return "number-tile"
     }
+    
+    // Empty cells have a lighter background
+    return "bg-[#F9EED7] hover:bg-[#F5DFB3]"
   }
 
-  // Update the return statement to use darker text colors
+  // Get position-based styling for the cell
+  const getCellPosition = (row: number, col: number) => {
+    const classes = []
+    
+    // Add margin to create gaps between 3x3 boxes
+    if ((col + 1) % 3 === 0 && col < 8) {
+      classes.push("mr-[2px]") // Add right margin for cells at the end of 3x3 boxes (except last column)
+    }
+    
+    if ((row + 1) % 3 === 0 && row < 8) {
+      classes.push("mb-[2px]") // Add bottom margin for cells at the bottom of 3x3 boxes (except last row)
+    }
+    
+    return classes.join(" ")
+  }
+
+  // Get border styling for cells
+  const getCellBorders = (row: number, col: number) => {
+    const classes = []
+    
+    // Right borders
+    if (col < 8) {
+      if ((col + 1) % 3 === 0) {
+        classes.push("border-r-[2px] border-r-[#8C653C]")
+      } else {
+        classes.push("border-r-[1px] border-r-[#D2B48C]")
+      }
+    }
+    
+    // Bottom borders
+    if (row < 8) {
+      if ((row + 1) % 3 === 0) {
+        classes.push("border-b-[2px] border-b-[#8C653C]")
+      } else {
+        classes.push("border-b-[1px] border-b-[#D2B48C]")
+      }
+    }
+
+    // Add right edge
+    if (col === 8) {
+      classes.push("border-r-[1px] border-r-[#8C653C]")
+    }
+
+    // Add bottom edge
+    if (row === 8) {
+      classes.push("border-b-[1px] border-b-[#8C653C]")
+    }
+    
+    return classes.join(" ")
+  }
+
+  // Update the return statement to use our wooden board style with gaps
   return (
-    <div className="grid grid-cols-9 gap-[1px] bg-fuchsia-500 p-[2px] rounded-lg shadow-xl animate-pulse-glow overflow-hidden">
-      {board.map((row, rowIndex) =>
-        row.map((cell, colIndex) => {
-          const isInvalid = isInvalidCell(rowIndex, colIndex)
-          const isCompleted = isInCompletedSection(rowIndex, colIndex)
+    <div className="wooden-border p-[6px] rounded-lg shadow-xl overflow-hidden bg-[#B58853]">
+      <div className="grid grid-cols-9 gap-0 bg-[#8C653C]">
+        {board.map((row, rowIndex) =>
+          row.map((cell, colIndex) => {
+            const isInvalid = isInvalidCell(rowIndex, colIndex)
+            const isCompleted = isInCompletedSection(rowIndex, colIndex)
 
-          return (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              data-cell={`${rowIndex}-${colIndex}`}
-              className={cn(
-                "aspect-square flex items-center justify-center text-sm md:text-lg font-bold",
-                "transition-all duration-200 relative",
-                getCellGradient(rowIndex, colIndex),
-                // Border styling for 3x3 boxes
-                (colIndex + 1) % 3 === 0 && colIndex < 8 && "border-r-[1px] md:border-r-2 border-r-fuchsia-500",
-                (rowIndex + 1) % 3 === 0 && rowIndex < 8 && "border-b-[1px] md:border-b-2 border-b-fuchsia-500",
-                // Cell state styling
-                isSelectedCell(rowIndex, colIndex) &&
-                  "bg-gradient-to-br from-cyan-200 to-cyan-300 ring-2 ring-cyan-500",
-                isComputerSelectedCell(rowIndex, colIndex) &&
-                  "bg-gradient-to-br from-fuchsia-200 to-fuchsia-300 ring-2 ring-fuchsia-500",
-                isOriginalCell(rowIndex, colIndex) && "font-extrabold text-purple-900",
-                !isOriginalCell(rowIndex, colIndex) && cell !== null && "text-indigo-900",
-                isCompleted && "animate-completed-cell",
-                cell === null &&
-                  !gameOver &&
-                  currentPlayer === 0 &&
-                  "cursor-pointer hover:bg-gradient-to-br hover:from-pink-100 hover:to-pink-200",
-              )}
-              onClick={() => cell === null && onCellSelect(rowIndex, colIndex)}
-            >
-              {isInvalid ? getInvalidCellValue() : cell !== null ? cell : ""}
+            // Calculate the 3x3 box this cell belongs to
+            const boxRow = Math.floor(rowIndex / 3)
+            const boxCol = Math.floor(colIndex / 3)
 
-              {/* Localized flash animation for invalid cells */}
-              {isInvalid && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-sm md:text-lg font-bold animate-flash-number">{getInvalidCellValue()}</div>
-                </div>
-              )}
-            </div>
-          )
-        }),
-      )}
+            return (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                data-cell={`${rowIndex}-${colIndex}`}
+                className={cn(
+                  "aspect-square flex items-center justify-center text-sm md:text-lg font-bold",
+                  "transition-all duration-200 relative",
+                  getCellStyle(rowIndex, colIndex),
+                  getCellBorders(rowIndex, colIndex),
+                  getCellPosition(rowIndex, colIndex),
+                  // Cell state styling
+                  isSelectedCell(rowIndex, colIndex) &&
+                    "ring-2 ring-[#F5BC41] z-10",
+                  isComputerSelectedCell(rowIndex, colIndex) &&
+                    "ring-2 ring-[#F37B60] z-10",
+                  isInvalid && "ring-2 ring-red-500 z-10",
+                  isCompleted && "animate-completed-cell",
+                  cell === null &&
+                    !gameOver &&
+                    currentPlayer === 0 &&
+                    "cursor-pointer hover:bg-[#F5DFB3]",
+                )}
+                onClick={() => cell === null && !isInvalid && onCellSelect(rowIndex, colIndex)}
+              >
+                {isInvalid ? getInvalidCellValue() : cell !== null ? cell : ""}
+
+                {/* Localized flash animation for invalid cells */}
+                {isInvalid && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-sm md:text-lg font-bold animate-flash-number">{getInvalidCellValue()}</div>
+                  </div>
+                )}
+              </div>
+            )
+          }),
+        )}
+      </div>
     </div>
   )
 }
