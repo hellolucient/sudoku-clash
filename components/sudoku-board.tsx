@@ -128,7 +128,10 @@ export default function SudokuBoard({
         }
         
         boxes.push(
-          <div key={`box-${boxRow}-${boxCol}`} className="grid grid-cols-3 grid-rows-3">
+          <div 
+            key={`box-${boxRow}-${boxCol}`} 
+            className="grid grid-cols-3 grid-rows-3 relative overflow-hidden rounded-sm box-glow"
+          >
             {cells}
           </div>
         );
@@ -141,7 +144,7 @@ export default function SudokuBoard({
   // Update the return statement with a better grid structure
   return (
     <div className="wooden-border p-2 rounded-lg shadow-xl overflow-hidden bg-[#B58853]">
-      <div className="grid grid-cols-3 grid-rows-3 gap-[2px] bg-[#8C653C]">
+      <div className="grid grid-cols-3 grid-rows-3 gap-[3px] bg-[#8C653C]">
         {renderBoxes()}
       </div>
     </div>

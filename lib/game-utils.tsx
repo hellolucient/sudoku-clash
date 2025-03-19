@@ -18,11 +18,11 @@ export function playSound(type: SoundType) {
 }
 
 // Helper to add floating points
-export function addFloatingPoints(value: number, x: number, y: number) {
+export function addFloatingPoints(value: number, x: number, y: number, isBonus: boolean = false) {
   if (typeof window !== "undefined") {
     try {
       const event = new CustomEvent("addFloatingPoints", {
-        detail: { value, x, y },
+        detail: { value, x, y, isBonus },
       })
       window.dispatchEvent(event)
     } catch (error) {

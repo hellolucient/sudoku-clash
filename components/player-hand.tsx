@@ -9,20 +9,12 @@ type PlayerHandProps = {
   disabled: boolean
 }
 
-const colorClasses = [
-  "player-tile-purple",
-  "player-tile-blue", 
-  "player-tile-green",
-  "player-tile-red",
-  "player-tile-orange",
-  "player-tile-pink",
-  "player-tile-teal"
-]
-
 export default function PlayerHand({ tiles = [], onTileSelect, disabled = false }: PlayerHandProps) {
-  // Get a random but consistent color for each tile
-  const getColorClass = (index: number, value: number) => {
-    return colorClasses[(index + value) % colorClasses.length]
+  // Get the color class based on the number value
+  const getColorClass = (value: number) => {
+    // Ensure value is between 1-9
+    const safeValue = Math.min(Math.max(1, value), 9);
+    return `tile-number-${safeValue}`;
   }
 
   // If tiles is not provided or empty, show empty state
@@ -43,7 +35,7 @@ export default function PlayerHand({ tiles = [], onTileSelect, disabled = false 
           key={`hand-${index}`}
           className={cn(
             "player-tile w-12 h-12 md:w-16 md:h-16 flex items-center justify-center",
-            getColorClass(index, value),
+            getColorClass(value),
             disabled && "opacity-50 cursor-not-allowed"
           )}
           onClick={() => !disabled && onTileSelect(index)}

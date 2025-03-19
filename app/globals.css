@@ -133,33 +133,63 @@
   box-shadow: 0 5px 10px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.5);
 }
 
-/* Colorful variants for player hand tiles */
-.player-tile-purple {
-  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+/* Colors for each number 1-9 - consistent coloring for same numbers */
+.tile-number-1 {
+  background: linear-gradient(135deg, #FF5252 0%, #D32F2F 100%); /* Red */
 }
 
-.player-tile-blue {
-  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+.tile-number-2 {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); /* Orange */
 }
 
-.player-tile-green {
-  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+.tile-number-3 {
+  background: linear-gradient(135deg, #FFEB3B 0%, #FBC02D 100%); /* Yellow */
 }
 
-.player-tile-red {
-  background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);
+.tile-number-4 {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); /* Green */
 }
 
-.player-tile-orange {
-  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+.tile-number-5 {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); /* Blue */
 }
 
-.player-tile-pink {
-  background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+.tile-number-6 {
+  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%); /* Purple */
 }
 
-.player-tile-teal {
-  background: linear-gradient(135deg, #009688 0%, #00796B 100%);
+.tile-number-7 {
+  background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%); /* Pink */
+}
+
+.tile-number-8 {
+  background: linear-gradient(135deg, #009688 0%, #00796B 100%); /* Teal */
+}
+
+.tile-number-9 {
+  background: linear-gradient(135deg, #673AB7 0%, #512DA8 100%); /* Deep Purple */
+}
+
+/* Glowing box style for 3x3 grids */
+.box-glow {
+  box-shadow: 0 0 0 2px rgba(245, 188, 65, 0.8), 
+              inset 0 0 8px rgba(245, 188, 65, 0.4);
+}
+
+/* Animation for glowing box borders */
+@keyframes box-border-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(245, 188, 65, 0.8), 
+                inset 0 0 8px rgba(245, 188, 65, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 4px 2px rgba(245, 188, 65, 0.9), 
+                inset 0 0 12px rgba(245, 188, 65, 0.6);
+  }
+}
+
+.box-glow-animated {
+  animation: box-border-pulse 3s ease infinite;
 }
 
 /* Notification banner styling for game messages */
@@ -249,16 +279,15 @@
   }
   80% {
     opacity: 1;
-    transform: translateY(-100px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-120px) scale(0.8);
+    transform: translateY(-60px) scale(1);
   }
 }
 
 .animate-float-up {
-  animation: float-up 2s ease-out forwards;
+  animation: float-up 1.5s ease-out forwards;
 }
 
 .glass-effect {
@@ -287,5 +316,34 @@
 
 .neon-text {
   text-shadow: 0 0 5px #F5BC41, 0 0 10px #F5BC41;
+}
+
+/* Update floating points bubbles for better visibility */
+.floating-points {
+  pointer-events: none;
+  position: absolute;
+  z-index: 50;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 16px;
+  opacity: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  animation: float-up 1.5s ease-out forwards;
+}
+
+.points-positive {
+  background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%); /* Brighter green */
+  color: white;
+}
+
+.points-negative {
+  background: linear-gradient(135deg, #FF5252 0%, #D32F2F 100%); /* Brighter red */
+  color: white;
+}
+
+.points-bonus {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%); /* Brighter gold */
+  color: white;
 }
 

@@ -185,7 +185,7 @@ export default function SudokuGame() {
         // Play bonus sound and show floating points
         setTimeout(() => {
           playSound("bonus")
-          addFloatingPoints(25, pointX, pointY - 20)
+          addFloatingPoints(25, pointX, pointY - 20, true)
         }, 300)
       }
 
@@ -198,7 +198,7 @@ export default function SudokuGame() {
         // Play bonus sound and show floating points with slight delay
         setTimeout(() => {
           playSound("bonus")
-          addFloatingPoints(25, pointX + 20, pointY - 20)
+          addFloatingPoints(25, pointX + 20, pointY - 20, true)
         }, 600)
       }
 
@@ -213,7 +213,7 @@ export default function SudokuGame() {
         // Play bonus sound and show floating points with slight delay
         setTimeout(() => {
           playSound("complete")
-          addFloatingPoints(50, pointX - 20, pointY - 20)
+          addFloatingPoints(50, pointX - 20, pointY - 20, true)
         }, 900)
       }
 
@@ -424,7 +424,7 @@ export default function SudokuGame() {
           // Play bonus sound and show floating points
           setTimeout(() => {
             playSound("bonus")
-            addFloatingPoints(25, pointX, pointY - 20)
+            addFloatingPoints(25, pointX, pointY - 20, true)
           }, 300)
         }
 
@@ -437,7 +437,7 @@ export default function SudokuGame() {
           // Play bonus sound and show floating points with slight delay
           setTimeout(() => {
             playSound("bonus")
-            addFloatingPoints(25, pointX + 20, pointY - 20)
+            addFloatingPoints(25, pointX + 20, pointY - 20, true)
           }, 600)
         }
 
@@ -452,7 +452,7 @@ export default function SudokuGame() {
           // Play bonus sound and show floating points with slight delay
           setTimeout(() => {
             playSound("complete")
-            addFloatingPoints(50, pointX - 20, pointY - 20)
+            addFloatingPoints(50, pointX - 20, pointY - 20, true)
           }, 900)
         }
 
