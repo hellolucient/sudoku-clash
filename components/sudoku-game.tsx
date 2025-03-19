@@ -377,7 +377,7 @@ export default function SudokuGame() {
       pointY = rect.top + rect.height / 2
     }
 
-    // Delay the actual move to show the selection
+    // Delay the actual move to show the selection (increased from 1 second to 1.5 seconds)
     setTimeout(() => {
       // Update the board
       const newBoard = gameState.board.map((r) => [...r])
@@ -527,7 +527,7 @@ export default function SudokuGame() {
       if (gameOver) {
         endGame(updatedPlayers)
       }
-    }, 1000)
+    }, 1500)
   }
 
   // Draw tiles and switch turn if no moves possible
@@ -583,11 +583,11 @@ export default function SudokuGame() {
 
   // Update the message area and score display for better contrast
   return (
-    <div className="flex flex-col gap-2 md:gap-4">
+    <div className="flex flex-col gap-1">
       {!gameState ? (
-        <div className="flex flex-col gap-3 p-4 md:p-6 rounded-xl kraft-paper shadow-xl border-2 border-[#8C653C]">
-          <h2 className="text-xl md:text-2xl font-bold text-[#4B3418]">Game Settings</h2>
-          <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 p-2 md:p-3 rounded-xl kraft-paper shadow-xl border-2 border-[#8C653C]">
+          <h2 className="text-lg md:text-xl font-bold text-[#4B3418]">Game Settings</h2>
+          <div className="flex flex-col gap-1">
             <label htmlFor="difficulty" className="text-sm font-medium text-[#6B4D28]">
               Difficulty
             </label>
@@ -610,24 +610,24 @@ export default function SudokuGame() {
           </div>
           <Button
             onClick={startNewGame}
-            className="bg-gradient-to-r from-[#B58853] to-[#9E7142] hover:from-[#A07647] hover:to-[#8C653C] text-white font-bold shadow-lg hover:shadow-xl transition-all mt-2 border border-[#8C653C]"
+            className="bg-gradient-to-r from-[#B58853] to-[#9E7142] hover:from-[#A07647] hover:to-[#8C653C] text-white font-bold shadow-lg hover:shadow-xl transition-all mt-1 border border-[#8C653C]"
           >
             START GAME
           </Button>
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-center mb-2 md:mb-4 p-3 md:p-4 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
-            <div className="text-base md:text-xl font-bold text-[#4B3418]">
+          <div className="flex justify-between items-center mb-1 p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
+            <div className="text-sm md:text-base font-bold text-[#4B3418]">
               <span className="text-[#1B998B]">YOU:</span> {gameState.players[0].score}
             </div>
-            <div className="text-base md:text-xl font-bold text-[#4B3418]">
+            <div className="text-sm md:text-base font-bold text-[#4B3418]">
               <span className="text-[#CC7A4D]">CPU:</span> {gameState.players[1].score}
             </div>
           </div>
 
-          <div className="p-3 bg-[#F9EED7]/90 rounded-xl mb-3 border-l-4 border-[#F5BC41] shadow-lg">
-            <p className="text-xs md:text-sm text-[#4B3418] font-medium">{gameState.message}</p>
+          <div className="p-1 bg-[#F9EED7]/90 rounded-xl mb-1 border-l-4 border-[#F5BC41] shadow-lg">
+            <p className="text-xs text-[#4B3418] font-medium">{gameState.message}</p>
           </div>
 
           <div ref={boardRef}>
@@ -643,8 +643,8 @@ export default function SudokuGame() {
             />
           </div>
 
-          <div className="mt-4 md:mt-6">
-            <h3 className="text-sm md:text-lg font-bold mb-2 md:mb-3 text-white bg-gradient-to-r from-[#B58853] to-[#9E7142] px-3 py-1 rounded-lg inline-block shadow-md">
+          <div className="mt-1">
+            <h3 className="text-xs md:text-sm font-bold mb-1 text-white bg-gradient-to-r from-[#B58853] to-[#9E7142] px-2 py-0.5 rounded-lg inline-block shadow-md">
               YOUR HAND
             </h3>
             <PlayerHand
@@ -654,11 +654,11 @@ export default function SudokuGame() {
             />
           </div>
 
-          <div className="mt-3 md:mt-4 flex justify-between text-xs md:text-sm">
-            <div className="bg-[#F9EED7]/90 text-[#4B3418] font-bold px-3 py-1 rounded-full border border-[#8C653C]">
+          <div className="mt-1 flex justify-between text-xs">
+            <div className="bg-[#F9EED7]/90 text-[#4B3418] font-bold px-2 py-0.5 rounded-full border border-[#8C653C]">
               Pool: {gameState.pool.length}
             </div>
-            <div className="bg-[#F9EED7]/90 text-[#4B3418] font-bold px-3 py-1 rounded-full border border-[#8C653C]">
+            <div className="bg-[#F9EED7]/90 text-[#4B3418] font-bold px-2 py-0.5 rounded-full border border-[#8C653C]">
               CPU: {gameState.players[1].hand.length}
             </div>
           </div>
@@ -666,7 +666,7 @@ export default function SudokuGame() {
           {gameState.gameOver && (
             <Button
               onClick={startNewGame}
-              className="mt-4 md:mt-6 bg-gradient-to-r from-[#CC7A4D] to-[#F37B60] hover:from-[#B56E45] hover:to-[#E56F55] text-white font-bold shadow-lg hover:shadow-xl transition-all border border-[#8C653C]"
+              className="mt-2 bg-gradient-to-r from-[#CC7A4D] to-[#F37B60] hover:from-[#B56E45] hover:to-[#E56F55] text-white font-bold shadow-lg hover:shadow-xl transition-all border border-[#8C653C]"
             >
               PLAY AGAIN
             </Button>

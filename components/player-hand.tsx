@@ -20,21 +20,21 @@ export default function PlayerHand({ tiles = [], onTileSelect, disabled = false 
   // If tiles is not provided or empty, show empty state
   if (!tiles || tiles.length === 0) {
     return (
-      <div className="mt-2">
-        <div className="flex justify-center space-x-2 md:space-x-3">
-          <div className="text-[#4B3418]">No tiles available</div>
+      <div className="mt-1">
+        <div className="flex justify-center space-x-1 md:space-x-2">
+          <div className="text-[#4B3418] text-xs">No tiles available</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-center space-x-2 md:space-x-3">
+    <div className="flex justify-center space-x-1 md:space-x-2">
       {tiles.map((value, index) => (
         <button
           key={`hand-${index}`}
           className={cn(
-            "player-tile w-12 h-12 md:w-16 md:h-16 flex items-center justify-center",
+            "player-tile w-10 h-10 md:w-14 md:h-14 flex items-center justify-center text-sm md:text-base",
             getColorClass(value),
             disabled && "opacity-50 cursor-not-allowed"
           )}

@@ -91,6 +91,7 @@ export default function SudokuBoard({
             const col = boxCol * 3 + cellCol;
             const isInvalid = isInvalidCell(row, col);
             const isCompleted = isInCompletedSection(row, col);
+            const isComputer = isComputerSelectedCell(row, col);
             
             cells.push(
               <div
@@ -103,8 +104,8 @@ export default function SudokuBoard({
                   // Cell state styling
                   isSelectedCell(row, col) &&
                     "ring-2 ring-[#F5BC41] z-10",
-                  isComputerSelectedCell(row, col) &&
-                    "ring-2 ring-[#F37B60] z-10",
+                  isComputer &&
+                    "z-20 bg-[#F37B60]/30",
                   isInvalid && "ring-2 ring-red-500 z-10",
                   isCompleted && "animate-completed-cell",
                   board[row][col] === null &&
@@ -121,6 +122,11 @@ export default function SudokuBoard({
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-sm md:text-lg font-bold animate-flash-number">{getInvalidCellValue()}</div>
                   </div>
+                )}
+                
+                {/* Computer selection pulse animation */}
+                {isComputer && (
+                  <div className="absolute inset-0 bg-[#F37B60]/30 animate-computer-pulse rounded"></div>
                 )}
               </div>
             );
@@ -143,8 +149,8 @@ export default function SudokuBoard({
 
   // Update the return statement with a better grid structure
   return (
-    <div className="wooden-border p-2 rounded-lg shadow-xl overflow-hidden bg-[#B58853]">
-      <div className="grid grid-cols-3 grid-rows-3 gap-[3px] bg-[#8C653C]">
+    <div className="wooden-border p-1 rounded-lg shadow-xl overflow-hidden bg-[#B58853]">
+      <div className="grid grid-cols-3 grid-rows-3 gap-[2px] bg-[#8C653C]">
         {renderBoxes()}
       </div>
     </div>
