@@ -8,6 +8,7 @@ import PlayerHand from "./player-hand"
 import { generateSudokuPuzzle } from "@/lib/sudoku-generator"
 import { checkValidPlacement, isRowComplete, isColumnComplete, isBoxComplete } from "@/lib/sudoku-validator"
 import { playSound, addFloatingPoints } from "@/lib/game-utils"
+import { usePlayerProfile } from "../contexts/player-profile-context"
 
 type Player = {
   name: string
@@ -23,6 +24,7 @@ type GameState = {
   players: Player[]
   gameOver: boolean
   message: string
+  startTime?: number
 }
 
 type CompletedSection = {
@@ -47,6 +49,7 @@ export default function SudokuGame() {
   const [computerSelectedCell, setComputerSelectedCell] = useState<[number, number] | null>(null)
   const [completedSections, setCompletedSections] = useState<CompletedSection[]>([])
   const boardRef = useRef<HTMLDivElement>(null)
+  const { updateStats } = usePlayerProfile()
 
   // Initialize or reset the game
   const startNewGame = () => {
@@ -82,6 +85,7 @@ export default function SudokuGame() {
       ],
       gameOver: false,
       message: "Your turn! Select a cell and then a number from your hand.",
+      startTime: Date.now(), // Track when the game started
     })
 
     setSelectedCell(null)
@@ -564,10 +568,23 @@ export default function SudokuGame() {
   // End the game and determine the winner
   const endGame = (players: Player[]) => {
     const winnerMessage = determineWinner(players)
+    const gameEndTime = Date.now()
+    const gameStartTime = gameState?.startTime || gameEndTime
+    const gameTimeInSeconds = Math.floor((gameEndTime - gameStartTime) / 1000)
+    
     setGameState((prev) => (prev ? { ...prev, gameOver: true, message: winnerMessage } : null))
 
     // Play game over sound
     playSound("gameOver")
+    
+    // Update player stats with game result
+    const playerWon = players[0].score > players[1].score
+    updateStats({
+      won: playerWon,
+      score: players[0].score,
+      timeInSeconds: gameTimeInSeconds,
+      difficulty: difficulty
+    })
   }
 
   // Determine the winner

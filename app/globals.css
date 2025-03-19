@@ -270,21 +270,21 @@
 /* New animation specifically for computer's selected cell */
 @keyframes computer-cell-pulse {
   0% {
-    opacity: 0.3;
-    box-shadow: 0 0 10px rgba(243, 123, 96, 0.5); /* #F37B60 - coral */
+    opacity: 0.4;
+    box-shadow: 0 0 10px rgba(243, 123, 96, 0.6); /* #F37B60 - coral */
   }
   50% {
-    opacity: 0.6;
-    box-shadow: 0 0 20px rgba(243, 123, 96, 0.9);
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(243, 123, 96, 1);
   }
   100% {
-    opacity: 0.3;
-    box-shadow: 0 0 10px rgba(243, 123, 96, 0.5);
+    opacity: 0.4;
+    box-shadow: 0 0 10px rgba(243, 123, 96, 0.6);
   }
 }
 
 .animate-computer-pulse {
-  animation: computer-cell-pulse 1s infinite;
+  animation: computer-cell-pulse 0.8s infinite;
 }
 
 @keyframes float-up {

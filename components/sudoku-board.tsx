@@ -126,7 +126,7 @@ export default function SudokuBoard({
                 
                 {/* Computer selection pulse animation */}
                 {isComputer && (
-                  <div className="absolute inset-0 bg-[#F37B60]/30 animate-computer-pulse rounded"></div>
+                  <div className="absolute inset-0 bg-[#F37B60]/40 animate-computer-pulse rounded ring-2 ring-[#F37B60]"></div>
                 )}
               </div>
             );
