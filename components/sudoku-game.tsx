@@ -44,6 +44,7 @@ export default function SudokuGame() {
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null)
+  const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
   const [invalidCells, setInvalidCells] = useState<Array<[number, number]>>([])
   const [invalidCell, setInvalidCell] = useState<[number, number, number] | null>(null)
   const [computerSelectedCell, setComputerSelectedCell] = useState<[number, number] | null>(null)
@@ -89,6 +90,7 @@ export default function SudokuGame() {
     })
 
     setSelectedCell(null)
+    setSelectedNumber(null)
     setInvalidCells([])
     setCompletedSections([])
   }
@@ -122,8 +124,21 @@ export default function SudokuGame() {
   // Handle player's move
   const handleCellSelect = (row: number, col: number) => {
     if (!gameState || gameState.gameOver || gameState.currentPlayer !== 0) return
-    if (gameState.board[row][col] !== null) return
 
+    if (gameState.board[row][col] !== null) {
+      // If clicking a number tile, highlight all tiles with the same number
+      const number = gameState.board[row][col]
+      // If clicking the same number again, clear the highlighting
+      if (selectedNumber === number) {
+        setSelectedNumber(null)
+      } else {
+        setSelectedNumber(number)
+      }
+      return
+    }
+
+    // If clicking an empty cell, clear any number highlighting
+    setSelectedNumber(null)
     playSound("select")
     setSelectedCell([row, col])
   }
@@ -292,6 +307,7 @@ export default function SudokuGame() {
     })
 
     setSelectedCell(null)
+    setSelectedNumber(null)
 
     // If game is over, show winner
     if (gameOver) {
@@ -657,6 +673,7 @@ export default function SudokuGame() {
               completedSections={completedSections}
               currentPlayer={gameState.currentPlayer}
               gameOver={gameState.gameOver}
+              selectedNumber={selectedNumber}
             />
           </div>
 
@@ -667,7 +684,7 @@ export default function SudokuGame() {
             <PlayerHand
               tiles={gameState.players[0].hand}
               onTileSelect={handleTileSelect}
-              disabled={gameState.currentPlayer !== 0 || !selectedCell || gameState.gameOver}
+              disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
             />
           </div>
 

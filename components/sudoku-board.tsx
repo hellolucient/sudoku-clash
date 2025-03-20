@@ -18,6 +18,7 @@ type SudokuBoardProps = {
   completedSections: CompletedSection[]
   currentPlayer: number
   gameOver: boolean
+  selectedNumber: number | null
 }
 
 export default function SudokuBoard({
@@ -29,6 +30,7 @@ export default function SudokuBoard({
   completedSections,
   currentPlayer,
   gameOver,
+  selectedNumber,
 }: SudokuBoardProps) {
   const isSelectedCell = (row: number, col: number) => {
     return selectedCell && selectedCell[0] === row && selectedCell[1] === col
@@ -40,6 +42,14 @@ export default function SudokuBoard({
 
   const isInvalidCell = (row: number, col: number) => {
     return invalidCell && invalidCell[0] === row && invalidCell[1] === col
+  }
+
+  const isSameNumber = (row: number, col: number) => {
+    if (selectedNumber === null) return false
+    const cellValue = board[row][col]
+    const isMatch = cellValue === selectedNumber
+    console.log(`Cell [${row},${col}] value: ${cellValue}, selectedNumber: ${selectedNumber}, isMatch: ${isMatch}`)
+    return isMatch
   }
 
   const getInvalidCellValue = () => {
@@ -68,13 +78,8 @@ export default function SudokuBoard({
 
   // Update the getCellStyle function to use our new wooden style
   const getCellStyle = (row: number, col: number) => {
-    // Original cells use the golden letter tile style
-    if (board[row][col] !== null) {
-      return "number-tile"
-    }
-    
-    // Empty cells have a lighter background
-    return "bg-[#F9EED7] hover:bg-[#F5DFB3]"
+    // Return just the base style, we'll handle highlighting separately
+    return board[row][col] !== null ? "number-tile" : "bg-[#F9EED7] hover:bg-[#F5DFB3]"
   }
 
   // Group the cells into 3x3 boxes for better rendering
@@ -92,6 +97,7 @@ export default function SudokuBoard({
             const isInvalid = isInvalidCell(row, col);
             const isCompleted = isInCompletedSection(row, col);
             const isComputer = isComputerSelectedCell(row, col);
+            const isSameNum = isSameNumber(row, col);
             
             cells.push(
               <div
@@ -108,14 +114,21 @@ export default function SudokuBoard({
                     "z-20 bg-[#F37B60]/30",
                   isInvalid && "ring-2 ring-red-500 z-10",
                   isCompleted && "animate-completed-cell",
-                  board[row][col] === null &&
-                    !gameOver &&
+                  !gameOver &&
                     currentPlayer === 0 &&
-                    "cursor-pointer hover:bg-[#F5DFB3]",
+                    "cursor-pointer"
                 )}
-                onClick={() => board[row][col] === null && !isInvalid && onCellSelect(row, col)}
+                onClick={() => !gameOver && currentPlayer === 0 && onCellSelect(row, col)}
               >
-                {isInvalid ? getInvalidCellValue() : board[row][col] !== null ? board[row][col] : ""}
+                {/* Add an overlay div for highlighting same numbers */}
+                {isSameNum && (
+                  <div className="absolute inset-0 bg-[#F5BC41]/70 z-5" />
+                )}
+                
+                {/* Cell content */}
+                <div className="relative z-10">
+                  {isInvalid ? getInvalidCellValue() : board[row][col] !== null ? board[row][col] : ""}
+                </div>
 
                 {/* Localized flash animation for invalid cells */}
                 {isInvalid && (
@@ -126,7 +139,7 @@ export default function SudokuBoard({
                 
                 {/* Computer selection pulse animation */}
                 {isComputer && (
-                  <div className="absolute inset-0 bg-[#F37B60]/40 animate-computer-pulse rounded ring-2 ring-[#F37B60]"></div>
+                  <div className="absolute inset-0 bg-[#F37B60]/30 animate-computer-pulse rounded"></div>
                 )}
               </div>
             );
