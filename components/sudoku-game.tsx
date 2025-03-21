@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SudokuBoard from "./sudoku-board"
 import PlayerHand from "./player-hand"
+import VictoryCelebration from "./victory-celebration"
+import DefeatMessage from "./defeat-message"
 import { generateSudokuPuzzle } from "@/lib/sudoku-generator"
 import { checkValidPlacement, isRowComplete, isColumnComplete, isBoxComplete } from "@/lib/sudoku-validator"
 import { playSound, addFloatingPoints } from "@/lib/game-utils"
@@ -51,6 +53,7 @@ export default function SudokuGame() {
   const [completedSections, setCompletedSections] = useState<CompletedSection[]>([])
   const boardRef = useRef<HTMLDivElement>(null)
   const { updateStats } = usePlayerProfile()
+  const [showEndMessage, setShowEndMessage] = useState(false)
 
   // Initialize or reset the game
   const startNewGame = () => {
@@ -296,12 +299,18 @@ export default function SudokuGame() {
     // Check if game should end
     const gameOver = shouldGameEnd(newBoard, updatedPlayers[0].hand, updatedPlayers[1].hand, newPool)
 
+    let nextPlayer = 1 // Default to computer's turn
+    if (!gameOver && updatedPlayers[1].hand.length === 0) {
+      message += " Computer has no tiles. Your turn continues."
+      nextPlayer = 0 // Keep it as player's turn
+    }
+
     setGameState({
       ...gameState,
       board: newBoard,
       players: updatedPlayers,
       pool: newPool,
-      currentPlayer: 1, // Switch to computer's turn
+      currentPlayer: nextPlayer,
       message,
       gameOver,
     })
@@ -531,14 +540,20 @@ export default function SudokuGame() {
       // Check if game should end
       const gameOver = shouldGameEnd(newBoard, updatedPlayers[0].hand, updatedPlayers[1].hand, newPool)
 
+      let nextPlayer = 0 // Default to player's turn
+      if (!gameOver && updatedPlayers[0].hand.length === 0) {
+        message += " You have no tiles. Computer's turn continues."
+        nextPlayer = 1 // Keep it as computer's turn
+      }
+
       setGameState({
         ...gameState,
         board: newBoard,
         players: updatedPlayers,
         pool: newPool,
-        currentPlayer: 0, // Switch back to player's turn
+        currentPlayer: nextPlayer,
         gameOver,
-        message: gameOver ? determineWinner(updatedPlayers) : message + " Your turn!",
+        message: gameOver ? determineWinner(updatedPlayers) : message + (nextPlayer === 0 ? " Your turn!" : ""),
       })
 
       setComputerSelectedCell(null)
@@ -576,7 +591,22 @@ export default function SudokuGame() {
       }
     }
 
-    updatedGameState.currentPlayer = nextPlayerIndex
+    // Only switch turns if the next player has tiles
+    if (updatedGameState.players[nextPlayerIndex].hand.length > 0) {
+      updatedGameState.currentPlayer = nextPlayerIndex
+      updatedGameState.message = `${updatedGameState.players[nextPlayerIndex].name}'s turn!`
+    } else {
+      // Keep the current player's turn if they still have tiles
+      if (updatedGameState.players[currentPlayerIndex].hand.length > 0) {
+        updatedGameState.message = `${updatedGameState.players[nextPlayerIndex].name} has no tiles. ${updatedGameState.players[currentPlayerIndex].name} continues playing.`
+      } else {
+        // If neither player has tiles and there are no tiles in the pool, end the game
+        if (updatedGameState.pool.length === 0) {
+          endGame(updatedGameState.players)
+          return
+        }
+      }
+    }
 
     setGameState(updatedGameState)
   }
@@ -589,18 +619,33 @@ export default function SudokuGame() {
     const gameTimeInSeconds = Math.floor((gameEndTime - gameStartTime) / 1000)
     
     setGameState((prev) => (prev ? { ...prev, gameOver: true, message: winnerMessage } : null))
+    setShowEndMessage(true)
 
-    // Play game over sound
-    playSound("gameOver")
+    const playerWon = players[0].score > players[1].score
+    
+    // Create a victory sound sequence if the player wins
+    if (playerWon) {
+      // Play a sequence of sounds for victory
+      playSound("complete")
+      setTimeout(() => playSound("bonus"), 300)
+      setTimeout(() => playSound("complete"), 600)
+      setTimeout(() => playSound("gameOver"), 1200)
+    } else {
+      // Just play game over sound for loss
+      playSound("gameOver")
+    }
     
     // Update player stats with game result
-    const playerWon = players[0].score > players[1].score
     updateStats({
       won: playerWon,
       score: players[0].score,
       timeInSeconds: gameTimeInSeconds,
       difficulty: difficulty
     })
+  }
+
+  const handleCloseEndMessage = () => {
+    setShowEndMessage(false)
   }
 
   // Determine the winner
@@ -705,6 +750,18 @@ export default function SudokuGame() {
               PLAY AGAIN
             </Button>
           )}
+
+          <VictoryCelebration 
+            isVisible={showEndMessage && gameState.gameOver && gameState.players[0].score > gameState.players[1].score}
+            score={gameState.players[0].score}
+            onClose={handleCloseEndMessage}
+          />
+          
+          <DefeatMessage
+            isVisible={showEndMessage && gameState.gameOver && gameState.players[0].score < gameState.players[1].score}
+            score={gameState.players[0].score}
+            onClose={handleCloseEndMessage}
+          />
         </>
       )}
     </div>
