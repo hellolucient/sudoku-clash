@@ -932,6 +932,23 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     <div className="flex flex-col gap-1">
       {gameState && (
         <>
+          {profile && (
+            <div className="w-full mb-1">
+              <div className="bg-[#F9EED7]/90 rounded-xl p-2 border border-[#8C653C]">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-[#4B3418] font-bold">{profile.name}</span>
+                    <span className="ml-2 px-2 py-0.5 bg-[#F5BC41] text-[#4B3418] text-xs font-bold rounded-full">
+                      Level {profile.level}
+                    </span>
+                  </div>
+                  <div className="text-xs text-[#6B4D28]">
+                    XP: {profile.experience}/{profile.experienceToNextLevel}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex justify-between items-center p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
             <div className="text-sm md:text-base font-bold text-[#4B3418]">
               <span className="text-[#1B998B]">YOU:</span> {gameState.players[0].score}
