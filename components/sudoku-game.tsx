@@ -110,10 +110,16 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     const playerHand = pool.splice(0, 7)
     const computerHand = pool.splice(0, 7)
 
+    // Reset power-ups to initial values
+    if (profile) {
+      const powerups = { ...profile.powerups, swap: 3 }
+      updateProfile({ powerups })
+    }
+
     const initialPowerUps: PowerUps[] = [
       { 
         peek: profile?.powerups.peek || 3,
-        swap: profile?.powerups.swap || 3,
+        swap: 3, // Always reset swap to 3
         steal: profile?.powerups.steal || 3,
         skip: profile?.powerups.skip || 3
       },
@@ -230,6 +236,7 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       updatedGameState.players[0].hand = playerHand
       updatedGameState.activePowerUp = null
       updatedGameState.stolenTileIndex = index // Highlight the new tile
+      updatedGameState.message = "You swapped a tile. Your turn!"
       
       // Show notification for the swap completion
       setPowerUpNotification({
@@ -642,13 +649,40 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           updatedGameState.message = "No tiles in the pool to swap with!"
           break
         }
-        // Show initial swap message
-        setPowerUpNotification({
-          isVisible: true,
-          action: 'swap',
-          player: 'player'
-        })
-        updatedGameState.message = "Select a tile from YOUR HAND to swap with the Pool."
+
+        // If a tile is selected from hand
+        if (selectedNumber !== null) {
+          // Get the tile from player's hand
+          const handIndex = gameState.players[0].hand.indexOf(selectedNumber)
+          const playerTile = updatedGameState.players[0].hand[handIndex]
+          
+          // Get a random tile from the pool
+          const randomIndex = Math.floor(Math.random() * updatedGameState.pool.length)
+          const poolTile = updatedGameState.pool[randomIndex]
+          
+          // Swap the tiles
+          updatedGameState.pool[randomIndex] = playerTile
+          updatedGameState.players[0].hand[handIndex] = poolTile
+          
+          updatedGameState.message = "You swapped a tile. Your turn!"
+          updatedGameState.activePowerUp = null
+          
+          // Highlight the new tile
+          updatedGameState.stolenTileIndex = handIndex
+          
+          // Clear the highlight after 2 seconds
+          setTimeout(() => {
+            setGameState(prev => prev ? { ...prev, stolenTileIndex: undefined } : null)
+          }, 2000)
+        } else {
+          // Show initial swap message
+          setPowerUpNotification({
+            isVisible: true,
+            action: 'swap',
+            player: 'player'
+          })
+          updatedGameState.message = "Select a tile from YOUR HAND to swap with the Pool."
+        }
         break
 
       case 'steal':
