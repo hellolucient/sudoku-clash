@@ -39,6 +39,8 @@ type GameState = {
   activePowerUp?: PowerUpType | null
   revealedCell?: { row: number; col: number; value: number }
   stolenTileIndex?: number
+  powerUpUsedThisTurn?: boolean
+  lastUsedPowerUp?: PowerUpType | null
 }
 
 type CompletedSection = {
@@ -48,14 +50,18 @@ type CompletedSection = {
   boxCol?: number
 }
 
+type SudokuGameProps = {
+  onExit: () => void
+  difficulty: "easy" | "medium" | "hard"
+}
+
 const DIFFICULTY_LEVELS = {
   easy: 40,
   medium: 30,
   hard: 20,
 }
 
-export default function SudokuGame() {
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
+export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null)
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
@@ -64,7 +70,7 @@ export default function SudokuGame() {
   const [computerSelectedCell, setComputerSelectedCell] = useState<[number, number] | null>(null)
   const [completedSections, setCompletedSections] = useState<CompletedSection[]>([])
   const boardRef = useRef<HTMLDivElement>(null)
-  const { updateStats } = usePlayerProfile()
+  const { updateStats, profile, updateProfile } = usePlayerProfile()
   const [showEndMessage, setShowEndMessage] = useState(false)
   const [powerUpNotification, setPowerUpNotification] = useState<{
     isVisible: boolean
@@ -75,6 +81,11 @@ export default function SudokuGame() {
     action: 'peek',
     player: 'player'
   })
+
+  // Start game automatically when component mounts
+  useEffect(() => {
+    startNewGame()
+  }, [])
 
   // Initialize or reset the game
   const startNewGame = () => {
@@ -100,8 +111,13 @@ export default function SudokuGame() {
     const computerHand = pool.splice(0, 7)
 
     const initialPowerUps: PowerUps[] = [
-      { peek: 3, swap: 3, steal: 3, skip: 3 },
-      { peek: 3, swap: 3, steal: 3, skip: 3 }
+      { 
+        peek: profile?.powerups.peek || 3,
+        swap: profile?.powerups.swap || 3,
+        steal: profile?.powerups.steal || 3,
+        skip: profile?.powerups.skip || 3
+      },
+      { peek: 3, swap: 3, steal: 3, skip: 3 } // CPU's power-ups
     ]
 
     setGameState({
@@ -151,7 +167,7 @@ export default function SudokuGame() {
     return false
   }
 
-  // Handle player's move
+  // Handle cell select
   const handleCellSelect = (row: number, col: number) => {
     if (!gameState || gameState.gameOver || gameState.currentPlayer !== 0) return
 
@@ -167,6 +183,15 @@ export default function SudokuGame() {
         })
       }
       return
+    }
+
+    // Clear revealed cell on any cell click after peek
+    if (gameState.revealedCell) {
+      setGameState({
+        ...gameState,
+        revealedCell: undefined,
+        message: "Your turn! Select a cell and then a number from your hand."
+      })
     }
 
     // Normal cell selection logic
@@ -204,9 +229,24 @@ export default function SudokuGame() {
       updatedGameState.pool[poolIndex] = tileToSwap
       updatedGameState.players[0].hand = playerHand
       updatedGameState.activePowerUp = null
-      updatedGameState.message = `Swapped ${tileToSwap} with ${poolTile} from the pool. Your turn!`
+      updatedGameState.stolenTileIndex = index // Highlight the new tile
       
+      // Show notification for the swap completion
+      setPowerUpNotification({
+        isVisible: true,
+        action: 'swap',
+        player: 'player'
+      })
+
       setGameState(updatedGameState)
+
+      // Clear the highlight after the next click
+      const clearHighlight = () => {
+        setGameState(prev => prev ? { ...prev, stolenTileIndex: undefined } : null)
+        document.removeEventListener('click', clearHighlight)
+      }
+      document.addEventListener('click', clearHighlight)
+      
       return
     }
 
@@ -402,13 +442,11 @@ export default function SudokuGame() {
         // If pool is empty, give the tile to the opponent (player)
         if (newPool.length === 0) {
           updatedPlayers[0].hand.push(move.number)
-          message += " Tile given to you."
+          message += " Pool is empty - Invalid tile given to you as bonus!"
         } else {
-          // Otherwise return the tile to the pool
-          newPool.push(move.number)
-          // Shuffle the pool
-          newPool.sort(() => Math.random() - 0.5)
-          message += " Tile returned to pool."
+          // Keep the tile in CPU's hand when there are tiles in the pool
+          updatedComputerHand.push(move.number)
+          message += " CPU keeps the tile."
         }
 
         // Clear the invalid cell after animation
@@ -446,6 +484,9 @@ export default function SudokuGame() {
         currentPlayer: nextPlayer,
         gameOver,
         message: gameOver ? determineWinner(updatedPlayers) : message + (nextPlayer === 0 ? " Your turn!" : ""),
+        // Only reset power-up flags if this wasn't after a skip
+        powerUpUsedThisTurn: gameState.lastUsedPowerUp === 'skip' ? true : false,
+        lastUsedPowerUp: gameState.lastUsedPowerUp === 'skip' ? 'skip' : null
       })
 
       setComputerSelectedCell(null)
@@ -556,6 +597,15 @@ export default function SudokuGame() {
     if (!gameState || gameState.gameOver || gameState.currentPlayer !== 0) return
     if (gameState.powerUps[0][type] === 0) return
 
+    // Check if a power-up was already used this turn
+    if (gameState.powerUpUsedThisTurn) {
+      setGameState(prev => prev ? {
+        ...prev,
+        message: prev.lastUsedPowerUp === 'skip' ? "You must take your turn now!" : "You can only use one power-up per turn!"
+      } : null)
+      return
+    }
+
     const updatedGameState = { ...gameState }
     
     // If a power-up is already active, cancel it
@@ -569,6 +619,15 @@ export default function SudokuGame() {
     // Activate the power-up
     updatedGameState.activePowerUp = type
     updatedGameState.powerUps[0][type]--
+    updatedGameState.powerUpUsedThisTurn = true // Mark that a power-up was used this turn
+    updatedGameState.lastUsedPowerUp = type // Track the last used power-up
+
+    // Update the player's profile power-up count
+    if (profile) {
+      const powerups = { ...profile.powerups }
+      powerups[type]--
+      updateProfile({ powerups })
+    }
 
     switch (type) {
       case 'peek':
@@ -576,7 +635,20 @@ export default function SudokuGame() {
         break
 
       case 'swap':
-        updatedGameState.message = "Select a tile from your hand to swap with a random tile from the pool."
+        if (gameState.pool.length === 0) {
+          updatedGameState.activePowerUp = null
+          updatedGameState.powerUps[0][type]++ // Refund the power-up
+          updatedGameState.powerUpUsedThisTurn = false // Reset since power-up wasn't actually used
+          updatedGameState.message = "No tiles in the pool to swap with!"
+          break
+        }
+        // Show initial swap message
+        setPowerUpNotification({
+          isVisible: true,
+          action: 'swap',
+          player: 'player'
+        })
+        updatedGameState.message = "Select a tile from YOUR HAND to swap with the Pool."
         break
 
       case 'steal':
@@ -646,10 +718,6 @@ export default function SudokuGame() {
 
     const number = gameState.players[0].hand[handIndex]
 
-    // Remove the tile from player's hand
-    const updatedPlayerHand = [...gameState.players[0].hand]
-    updatedPlayerHand.splice(handIndex, 1)
-
     // Check if placement is valid
     const isValid = checkValidPlacement(gameState.solution, row, col, number)
 
@@ -678,7 +746,13 @@ export default function SudokuGame() {
       pointY = rect.top + rect.height / 2
     }
 
+    // Create a copy of the player's hand that we'll modify based on the move's validity
+    const updatedPlayerHand = [...gameState.players[0].hand]
+
     if (isValid) {
+      // Remove the tile from player's hand for valid moves
+      updatedPlayerHand.splice(handIndex, 1)
+
       // Play sound
       playSound("place")
 
@@ -741,6 +815,18 @@ export default function SudokuGame() {
           setCompletedSections([])
         }, 1800) // Animation lasts 1.8s (3 flashes)
       }
+
+      // Draw a new tile if possible (only for valid moves)
+      if (newPool.length > 0) {
+        const newTile = newPool.pop()
+        updatedPlayerHand.push(newTile!)
+        message += " Drew a new tile."
+
+        // Play draw sound
+        setTimeout(() => {
+          playSound("draw")
+        }, 500)
+      }
     } else {
       // Play invalid sound
       playSound("invalid")
@@ -751,16 +837,15 @@ export default function SudokuGame() {
       // For invalid moves, show animation but don't update board
       setInvalidCell([row, col, number])
 
-      // If pool is empty, give the tile to the opponent
+      // If pool is empty, give the tile to the opponent as an extra penalty
       if (newPool.length === 0) {
+        // Remove the tile from player's hand and give it to CPU
+        updatedPlayerHand.splice(handIndex, 1)
         updatedPlayers[1].hand.push(number)
-        message += " Tile given to opponent."
+        message += " Pool is empty - Invalid tile given to CPU as penalty!"
       } else {
-        // Otherwise return the tile to the pool
-        newPool.push(number)
-        // Shuffle the pool
-        newPool.sort(() => Math.random() - 0.5)
-        message += " Tile returned to pool."
+        // Keep the tile in player's hand (no changes needed to updatedPlayerHand)
+        message += " Invalid placement! Keep your tile. CPU's turn."
       }
 
       // Clear the invalid cell after animation
@@ -776,25 +861,14 @@ export default function SudokuGame() {
       hand: updatedPlayerHand,
     }
 
-    // Draw a new tile if possible
-    if (newPool.length > 0) {
-      const newTile = newPool.pop()
-      updatedPlayers[0].hand.push(newTile!)
-      message += " Drew a new tile."
-
-      // Play draw sound
-      setTimeout(() => {
-        playSound("draw")
-      }, 500)
-    }
-
     // Check if game should end
     const gameOver = shouldGameEnd(newBoard, updatedPlayers[0].hand, updatedPlayers[1].hand, newPool)
 
-    let nextPlayer = 1 // Default to computer's turn
+    // Determine next player
+    let nextPlayer = 1  // Always go to CPU after player's move (valid or invalid)
     if (!gameOver && updatedPlayers[1].hand.length === 0) {
       message += " Computer has no tiles. Your turn continues."
-      nextPlayer = 0 // Keep it as player's turn
+      nextPlayer = 0 // Keep it as player's turn only if CPU has no tiles
     }
 
     setGameState({
@@ -803,8 +877,10 @@ export default function SudokuGame() {
       players: updatedPlayers,
       pool: newPool,
       currentPlayer: nextPlayer,
-      message,
+      message: message + (nextPlayer === 0 ? " Your turn!" : ""),
       gameOver,
+      powerUpUsedThisTurn: false, // Reset when turn changes
+      lastUsedPowerUp: null // Reset when a move is made
     })
 
     setSelectedCell(null)
@@ -819,41 +895,6 @@ export default function SudokuGame() {
   // Update the message area and score display for better contrast
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex flex-col gap-2 p-2 md:p-3 rounded-xl kraft-paper shadow-xl border-2 border-[#8C653C]">
-        {!gameState && (
-          <>
-            <h2 className="text-lg md:text-xl font-bold text-[#4B3418]">Game Settings</h2>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="difficulty" className="text-sm font-medium text-[#6B4D28]">
-                Difficulty
-              </label>
-              <Select value={difficulty} onValueChange={(value: string) => setDifficulty(value as "easy" | "medium" | "hard")}>
-                <SelectTrigger id="difficulty" className="bg-[#F9EED7] border-[#8C653C] text-[#4B3418]">
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#F9EED7] border-[#8C653C]">
-                  <SelectItem value="easy" className="text-[#4B3418] focus:bg-[#F5DFB3]">
-                    Easy
-                  </SelectItem>
-                  <SelectItem value="medium" className="text-[#4B3418] focus:bg-[#F5DFB3]">
-                    Medium
-                  </SelectItem>
-                  <SelectItem value="hard" className="text-[#4B3418] focus:bg-[#F5DFB3]">
-                    Hard
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={startNewGame}
-              className="bg-gradient-to-r from-[#B58853] to-[#9E7142] hover:from-[#A07647] hover:to-[#8C653C] text-white font-bold shadow-lg hover:shadow-xl transition-all mt-1 border border-[#8C653C]"
-            >
-              START GAME
-            </Button>
-          </>
-        )}
-      </div>
-
       {gameState && (
         <>
           <div className="flex justify-between items-center p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
@@ -863,6 +904,33 @@ export default function SudokuGame() {
             <div className="text-sm md:text-base font-bold text-[#4B3418]">
               <span className="text-[#CC7A4D]">CPU:</span> {gameState.players[1].score}
             </div>
+          </div>
+
+          <div className="flex justify-center gap-2 p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
+            <PowerUpButton
+              type="peek"
+              count={gameState.powerUps[0].peek}
+              disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
+              onClick={() => handlePowerUp('peek')}
+            />
+            <PowerUpButton
+              type="swap"
+              count={gameState.powerUps[0].swap}
+              disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
+              onClick={() => handlePowerUp('swap')}
+            />
+            <PowerUpButton
+              type="steal"
+              count={gameState.powerUps[0].steal}
+              disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
+              onClick={() => handlePowerUp('steal')}
+            />
+            <PowerUpButton
+              type="skip"
+              count={gameState.powerUps[0].skip}
+              disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
+              onClick={() => handlePowerUp('skip')}
+            />
           </div>
 
           <div className="p-1 bg-[#F9EED7]/90 rounded-xl mb-1 border-l-4 border-[#F5BC41] shadow-lg">
@@ -914,6 +982,15 @@ export default function SudokuGame() {
             </Button>
           )}
 
+          {!gameState.gameOver && (
+            <Button
+              onClick={onExit}
+              className="mt-2 bg-gradient-to-r from-[#CC7A4D] to-[#F37B60] hover:from-[#B56E45] hover:to-[#E56F55] text-white font-bold shadow-lg hover:shadow-xl transition-all border border-[#8C653C]"
+            >
+              EXIT GAME
+            </Button>
+          )}
+
           <VictoryCelebration 
             isVisible={showEndMessage && gameState.gameOver && gameState.players[0].score > gameState.players[1].score}
             score={gameState.players[0].score}
@@ -939,6 +1016,7 @@ export default function SudokuGame() {
             action={powerUpNotification.action}
             player={powerUpNotification.player}
             onClose={() => setPowerUpNotification(prev => ({ ...prev, isVisible: false }))}
+            gameState={gameState}
           />
         </>
       )}

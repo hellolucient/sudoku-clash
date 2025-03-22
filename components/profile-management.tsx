@@ -4,6 +4,11 @@ import React, { useState } from 'react';
 import { usePlayerProfile } from '../contexts/player-profile-context';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+
+type ProfileManagementProps = {
+  onStartGame: (difficulty: "easy" | "medium" | "hard") => void;
+}
 
 /**
  * Component for creating a new player profile
@@ -116,8 +121,9 @@ const PowerupDisplay: React.FC = () => {
 /**
  * Main profile management component that handles new user creation and profile display
  */
-export default function ProfileManagement() {
+export default function ProfileManagement({ onStartGame }: ProfileManagementProps) {
   const { profile, isLoading } = usePlayerProfile();
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
   
   if (isLoading) {
     return (
@@ -137,6 +143,35 @@ export default function ProfileManagement() {
     <div>
       <ProfileSummary />
       <PowerupDisplay />
+      <div className="mt-4 flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="difficulty" className="text-sm font-medium text-[#6B4D28]">
+            Difficulty
+          </label>
+          <Select value={difficulty} onValueChange={(value: "easy" | "medium" | "hard") => setDifficulty(value)}>
+            <SelectTrigger id="difficulty" className="bg-[#F9EED7] border-[#8C653C] text-[#4B3418]">
+              <SelectValue placeholder="Select difficulty" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#F9EED7] border-[#8C653C]">
+              <SelectItem value="easy" className="text-[#4B3418] focus:bg-[#F5DFB3]">
+                Easy
+              </SelectItem>
+              <SelectItem value="medium" className="text-[#4B3418] focus:bg-[#F5DFB3]">
+                Medium
+              </SelectItem>
+              <SelectItem value="hard" className="text-[#4B3418] focus:bg-[#F5DFB3]">
+                Hard
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button
+          onClick={() => onStartGame(difficulty)}
+          className="bg-gradient-to-r from-[#B58853] to-[#9E7142] hover:from-[#A07647] hover:to-[#8C653C] text-white font-bold shadow-lg hover:shadow-xl transition-all mt-1 border border-[#8C653C]"
+        >
+          START GAME
+        </Button>
+      </div>
     </div>
   );
 } 

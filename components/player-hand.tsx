@@ -33,9 +33,9 @@ export default function PlayerHand({ tiles, onTileSelect, disabled = false, high
             relative flex items-center justify-center
             w-10 h-10 md:w-12 md:h-12
             rounded-lg number-tile
-            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
-            ${highlightedTileIndex === index ? 'animate-pulse border-2 border-[#1B998B]' : ''}
-            transition-all
+            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg'}
+            ${highlightedTileIndex === index ? 'scale-110 shadow-lg translate-y-[-4px] border-2 border-[#1B998B] z-10 animate-slow-pulse' : ''}
+            transition-all duration-300
           `}
         >
           {tile}

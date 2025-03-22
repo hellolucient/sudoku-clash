@@ -3,15 +3,17 @@
 import { useEffect } from 'react'
 
 type PowerUpAction = 'peek' | 'swap' | 'steal' | 'skip'
+type PowerUpType = PowerUpAction | 'none'
 
 type PowerUpNotificationProps = {
   isVisible: boolean
-  action: PowerUpAction
+  action: PowerUpType
   player: 'player' | 'cpu'
   onClose: () => void
+  gameState?: { activePowerUp?: PowerUpType | null }
 }
 
-export default function PowerUpNotification({ isVisible, action, player, onClose }: PowerUpNotificationProps) {
+export default function PowerUpNotification({ isVisible, action, player, onClose, gameState }: PowerUpNotificationProps) {
   useEffect(() => {
     if (isVisible) {
       // Auto-hide notification after 2 seconds
@@ -24,26 +26,31 @@ export default function PowerUpNotification({ isVisible, action, player, onClose
 
   if (!isVisible) return null
 
-  const messages = {
-    peek: {
-      player: "You used Peek to reveal a number!",
-      cpu: "CPU used Peek to reveal a number!"
-    },
-    swap: {
-      player: "You swapped a tile with the pool!",
-      cpu: "CPU swapped a tile with the pool!"
-    },
-    steal: {
-      player: "You stole a tile from CPU!",
-      cpu: "CPU stole a tile from you!"
-    },
-    skip: {
-      player: "You skipped your turn!",
-      cpu: "CPU skipped their turn!"
+  const getMessage = () => {
+    if (player === 'cpu') {
+      return `CPU used ${action.toUpperCase()}!`
+    }
+
+    switch (action) {
+      case 'peek':
+        return 'Select an empty cell to peek at its number'
+      case 'swap':
+        // If there's an active power-up, show the initial message
+        if (gameState?.activePowerUp === 'swap') {
+          return 'Select a tile from YOUR HAND to swap'
+        }
+        // Otherwise, show the completion message
+        return 'You have swapped a tile from the Pool'
+      case 'steal':
+        return 'You stole a tile from CPU!'
+      case 'skip':
+        return 'You skipped your turn!'
+      default:
+        return ''
     }
   }
 
-  const message = messages[action][player]
+  const message = getMessage()
   const bgColor = player === 'player' ? 'bg-[#4B3418]' : 'bg-[#8C653C]'
   const borderColor = player === 'player' ? 'border-[#F5BC41]' : 'border-[#CC4B37]'
 
