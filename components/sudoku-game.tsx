@@ -11,11 +11,19 @@ import { generateSudokuPuzzle } from "@/lib/sudoku-generator"
 import { checkValidPlacement, isRowComplete, isColumnComplete, isBoxComplete } from "@/lib/sudoku-validator"
 import { playSound, addFloatingPoints } from "@/lib/game-utils"
 import { usePlayerProfile } from "../contexts/player-profile-context"
+import PowerUpButton from "./power-up-button"
+import PowerUpNotification from "./power-up-notification"
 
 type Player = {
   name: string
   score: number
   hand: number[]
+}
+
+type PowerUpType = 'peek' | 'swap' | 'steal' | 'skip'
+
+type PowerUps = {
+  [key in PowerUpType]: number
 }
 
 type GameState = {
@@ -27,6 +35,10 @@ type GameState = {
   gameOver: boolean
   message: string
   startTime?: number
+  powerUps: PowerUps[]
+  activePowerUp?: PowerUpType | null
+  revealedCell?: { row: number; col: number; value: number }
+  stolenTileIndex?: number
 }
 
 type CompletedSection = {
@@ -54,6 +66,15 @@ export default function SudokuGame() {
   const boardRef = useRef<HTMLDivElement>(null)
   const { updateStats } = usePlayerProfile()
   const [showEndMessage, setShowEndMessage] = useState(false)
+  const [powerUpNotification, setPowerUpNotification] = useState<{
+    isVisible: boolean
+    action: PowerUpType
+    player: 'player' | 'cpu'
+  }>({
+    isVisible: false,
+    action: 'peek',
+    player: 'player'
+  })
 
   // Initialize or reset the game
   const startNewGame = () => {
@@ -78,6 +99,11 @@ export default function SudokuGame() {
     const playerHand = pool.splice(0, 7)
     const computerHand = pool.splice(0, 7)
 
+    const initialPowerUps: PowerUps[] = [
+      { peek: 3, swap: 3, steal: 3, skip: 3 },
+      { peek: 3, swap: 3, steal: 3, skip: 3 }
+    ]
+
     setGameState({
       board: puzzle,
       solution,
@@ -90,6 +116,7 @@ export default function SudokuGame() {
       gameOver: false,
       message: "Your turn! Select a cell and then a number from your hand.",
       startTime: Date.now(), // Track when the game started
+      powerUps: initialPowerUps,
     })
 
     setSelectedCell(null)
@@ -128,10 +155,23 @@ export default function SudokuGame() {
   const handleCellSelect = (row: number, col: number) => {
     if (!gameState || gameState.gameOver || gameState.currentPlayer !== 0) return
 
+    // Handle peek power-up
+    if (gameState.activePowerUp === 'peek') {
+      if (gameState.board[row][col] === null) {
+        const value = gameState.solution[row][col]
+        setGameState({
+          ...gameState,
+          revealedCell: { row, col, value },
+          activePowerUp: null,
+          message: `The correct number for this cell is ${value}. Make your move!`
+        })
+      }
+      return
+    }
+
+    // Normal cell selection logic
     if (gameState.board[row][col] !== null) {
-      // If clicking a number tile, highlight all tiles with the same number
       const number = gameState.board[row][col]
-      // If clicking the same number again, clear the highlighting
       if (selectedNumber === number) {
         setSelectedNumber(null)
       } else {
@@ -140,7 +180,6 @@ export default function SudokuGame() {
       return
     }
 
-    // If clicking an empty cell, clear any number highlighting
     setSelectedNumber(null)
     playSound("select")
     setSelectedCell([row, col])
@@ -148,180 +187,33 @@ export default function SudokuGame() {
 
   // Handle tile selection from player's hand
   const handleTileSelect = (index: number) => {
-    if (!gameState || !selectedCell || gameState.gameOver || gameState.currentPlayer !== 0) return
+    if (!gameState || gameState.gameOver || gameState.currentPlayer !== 0) return
 
+    // Handle swap power-up
+    if (gameState.activePowerUp === 'swap' && gameState.pool.length > 0) {
+      const updatedGameState = { ...gameState }
+      const playerHand = [...updatedGameState.players[0].hand]
+      const tileToSwap = playerHand[index]
+      
+      // Get a random tile from the pool
+      const poolIndex = Math.floor(Math.random() * updatedGameState.pool.length)
+      const poolTile = updatedGameState.pool[poolIndex]
+      
+      // Swap the tiles
+      playerHand[index] = poolTile
+      updatedGameState.pool[poolIndex] = tileToSwap
+      updatedGameState.players[0].hand = playerHand
+      updatedGameState.activePowerUp = null
+      updatedGameState.message = `Swapped ${tileToSwap} with ${poolTile} from the pool. Your turn!`
+      
+      setGameState(updatedGameState)
+      return
+    }
+
+    // Normal tile selection logic
+    if (!selectedCell) return
     const [row, col] = selectedCell
-    const number = gameState.players[0].hand[index]
-
-    // Remove the tile from player's hand
-    const updatedPlayerHand = [...gameState.players[0].hand]
-    updatedPlayerHand.splice(index, 1)
-
-    // Check if placement is valid
-    const isValid = checkValidPlacement(gameState.solution, row, col, number)
-
-    // Update score
-    let scoreChange = isValid ? number : -10
-    let message = isValid ? `You placed ${number} correctly! +${number} points.` : `Invalid placement! -10 points.`
-
-    // Create a temporary board for animation
-    const newBoard = gameState.board.map((r) => [...r])
-    const newPool = [...gameState.pool]
-    const updatedPlayers = [...gameState.players]
-
-    // Get cell position for floating points
-    const cellElement = document.querySelector(`[data-cell="${row}-${col}"]`)
-    let pointX = 0
-    let pointY = 0
-
-    if (cellElement) {
-      const rect = cellElement.getBoundingClientRect()
-      pointX = rect.left + rect.width / 2
-      pointY = rect.top
-    } else if (boardRef.current) {
-      // Fallback to board position
-      const rect = boardRef.current.getBoundingClientRect()
-      pointX = rect.left + rect.width / 2
-      pointY = rect.top + rect.height / 2
-    }
-
-    if (isValid) {
-      // Play sound
-      playSound("place")
-
-      // Show floating points
-      addFloatingPoints(number, pointX, pointY)
-
-      // Update the board permanently for valid moves
-      newBoard[row][col] = number
-
-      // Check for completions and collect them
-      const newCompletedSections: CompletedSection[] = []
-
-      // Check row completion
-      if (isRowComplete(newBoard, row)) {
-        scoreChange += 25
-        message += " Row complete! +25 bonus points."
-        newCompletedSections.push({ type: "row", index: row })
-
-        // Play bonus sound and show floating points
-        setTimeout(() => {
-          playSound("bonus")
-          addFloatingPoints(25, pointX, pointY - 20, true)
-        }, 300)
-      }
-
-      // Check column completion
-      if (isColumnComplete(newBoard, col)) {
-        scoreChange += 25
-        message += " Column complete! +25 bonus points."
-        newCompletedSections.push({ type: "column", index: col })
-
-        // Play bonus sound and show floating points with slight delay
-        setTimeout(() => {
-          playSound("bonus")
-          addFloatingPoints(25, pointX + 20, pointY - 20, true)
-        }, 600)
-      }
-
-      // Check box completion
-      const boxRow = Math.floor(row / 3)
-      const boxCol = Math.floor(col / 3)
-      if (isBoxComplete(newBoard, boxRow, boxCol)) {
-        scoreChange += 50
-        message += " Box complete! +50 bonus points."
-        newCompletedSections.push({ type: "box", index: boxRow * 3 + boxCol, boxRow, boxCol })
-
-        // Play bonus sound and show floating points with slight delay
-        setTimeout(() => {
-          playSound("complete")
-          addFloatingPoints(50, pointX - 20, pointY - 20, true)
-        }, 900)
-      }
-
-      // If there are completed sections, show the animation
-      if (newCompletedSections.length > 0) {
-        setCompletedSections(newCompletedSections)
-
-        // Clear the completed sections after animation
-        setTimeout(() => {
-          setCompletedSections([])
-        }, 1800) // Animation lasts 1.8s (3 flashes)
-      }
-    } else {
-      // Play invalid sound
-      playSound("invalid")
-
-      // Show floating points for penalty
-      addFloatingPoints(-10, pointX, pointY)
-
-      // For invalid moves, we'll show the number temporarily for animation
-      // but it won't be permanently added to the board
-      setInvalidCell([row, col, number])
-
-      // If pool is empty, give the tile to the opponent
-      if (newPool.length === 0) {
-        updatedPlayers[1].hand.push(number)
-        message += " Tile given to opponent."
-      } else {
-        // Otherwise return the tile to the pool
-        newPool.push(number)
-        // Shuffle the pool
-        newPool.sort(() => Math.random() - 0.5)
-        message += " Tile returned to pool."
-      }
-
-      // Clear the invalid cell after animation
-      setTimeout(() => {
-        setInvalidCell(null)
-      }, 1500)
-    }
-
-    // Update player's score and hand
-    updatedPlayers[0] = {
-      ...updatedPlayers[0],
-      score: updatedPlayers[0].score + scoreChange,
-      hand: updatedPlayerHand,
-    }
-
-    // Draw a new tile if possible
-    if (newPool.length > 0) {
-      const newTile = newPool.pop()
-      updatedPlayers[0].hand.push(newTile!)
-      message += " Drew a new tile."
-
-      // Play draw sound
-      setTimeout(() => {
-        playSound("draw")
-      }, 500)
-    }
-
-    // Check if game should end
-    const gameOver = shouldGameEnd(newBoard, updatedPlayers[0].hand, updatedPlayers[1].hand, newPool)
-
-    let nextPlayer = 1 // Default to computer's turn
-    if (!gameOver && updatedPlayers[1].hand.length === 0) {
-      message += " Computer has no tiles. Your turn continues."
-      nextPlayer = 0 // Keep it as player's turn
-    }
-
-    setGameState({
-      ...gameState,
-      board: newBoard,
-      players: updatedPlayers,
-      pool: newPool,
-      currentPlayer: nextPlayer,
-      message,
-      gameOver,
-    })
-
-    setSelectedCell(null)
-    setSelectedNumber(null)
-
-    // If game is over, show winner
-    if (gameOver) {
-      endGame(updatedPlayers)
-    }
+    handleMove(row, col, index)
   }
 
   // Computer's turn
@@ -659,43 +551,312 @@ export default function SudokuGame() {
     }
   }
 
+  // Handle power-up usage
+  const handlePowerUp = (type: PowerUpType) => {
+    if (!gameState || gameState.gameOver || gameState.currentPlayer !== 0) return
+    if (gameState.powerUps[0][type] === 0) return
+
+    const updatedGameState = { ...gameState }
+    
+    // If a power-up is already active, cancel it
+    if (gameState.activePowerUp) {
+      updatedGameState.activePowerUp = null
+      updatedGameState.message = "Power-up cancelled. Your turn!"
+      setGameState(updatedGameState)
+      return
+    }
+
+    // Activate the power-up
+    updatedGameState.activePowerUp = type
+    updatedGameState.powerUps[0][type]--
+
+    switch (type) {
+      case 'peek':
+        updatedGameState.message = "Select an empty cell to peek at its number."
+        break
+
+      case 'swap':
+        updatedGameState.message = "Select a tile from your hand to swap with a random tile from the pool."
+        break
+
+      case 'steal':
+        if (gameState.players[1].hand.length > 0) {
+          const cpuHand = [...gameState.players[1].hand]
+          const randomIndex = Math.floor(Math.random() * cpuHand.length)
+          const stolenTile = cpuHand.splice(randomIndex, 1)[0]
+          updatedGameState.players[1].hand = cpuHand
+          updatedGameState.players[0].hand.push(stolenTile)
+          updatedGameState.stolenTileIndex = updatedGameState.players[0].hand.length - 1
+          updatedGameState.message = `Stole a ${stolenTile} from CPU!`
+          updatedGameState.activePowerUp = null // Immediately deactivate since no further action needed
+
+          // Clear the stolen tile highlight after 2 seconds
+          setTimeout(() => {
+            setGameState(prev => prev ? { ...prev, stolenTileIndex: undefined } : null)
+          }, 2000)
+        }
+        break
+
+      case 'skip':
+        updatedGameState.currentPlayer = 1
+        updatedGameState.activePowerUp = null // Immediately deactivate since no further action needed
+        updatedGameState.message = "Skipped your turn. CPU's turn!"
+        break
+    }
+
+    // Show notification
+    setPowerUpNotification({
+      isVisible: true,
+      action: type,
+      player: 'player'
+    })
+
+    setGameState(updatedGameState)
+  }
+
+  // Handle CPU power-up usage
+  const handleCPUPowerUp = () => {
+    if (!gameState || gameState.gameOver || gameState.currentPlayer !== 1) return
+
+    const availablePowerUps = Object.entries(gameState.powerUps[1])
+      .filter(([type, count]) => count > 0)
+      .map(([type]) => type as PowerUpType)
+
+    if (availablePowerUps.length === 0) return
+
+    const randomPowerUp = availablePowerUps[Math.floor(Math.random() * availablePowerUps.length)]
+    const updatedGameState = { ...gameState }
+    updatedGameState.powerUps[1][randomPowerUp]--
+
+    // Implement CPU power-up logic similar to player's but automated
+    // ... CPU power-up implementation ...
+
+    // Show notification
+    setPowerUpNotification({
+      isVisible: true,
+      action: randomPowerUp,
+      player: 'cpu'
+    })
+
+    setGameState(updatedGameState)
+  }
+
+  const handleMove = (row: number, col: number, handIndex: number) => {
+    if (!gameState) return
+
+    const number = gameState.players[0].hand[handIndex]
+
+    // Remove the tile from player's hand
+    const updatedPlayerHand = [...gameState.players[0].hand]
+    updatedPlayerHand.splice(handIndex, 1)
+
+    // Check if placement is valid
+    const isValid = checkValidPlacement(gameState.solution, row, col, number)
+
+    // Update score
+    let scoreChange = isValid ? number : -10
+    let message = isValid ? `You placed ${number} correctly! +${number} points.` : `Invalid placement! -10 points.`
+
+    // Create a temporary board for animation
+    const newBoard = gameState.board.map((r) => [...r])
+    const newPool = [...gameState.pool]
+    const updatedPlayers = [...gameState.players]
+
+    // Get cell position for floating points
+    const cellElement = document.querySelector(`[data-cell="${row}-${col}"]`)
+    let pointX = 0
+    let pointY = 0
+
+    if (cellElement) {
+      const rect = cellElement.getBoundingClientRect()
+      pointX = rect.left + rect.width / 2
+      pointY = rect.top
+    } else if (boardRef.current) {
+      // Fallback to board position
+      const rect = boardRef.current.getBoundingClientRect()
+      pointX = rect.left + rect.width / 2
+      pointY = rect.top + rect.height / 2
+    }
+
+    if (isValid) {
+      // Play sound
+      playSound("place")
+
+      // Show floating points
+      addFloatingPoints(number, pointX, pointY)
+
+      // Update the board permanently for valid moves
+      newBoard[row][col] = number
+
+      // Check for completions and collect them
+      const newCompletedSections: CompletedSection[] = []
+
+      // Check row completion
+      if (isRowComplete(newBoard, row)) {
+        scoreChange += 25
+        message += " Row complete! +25 bonus points."
+        newCompletedSections.push({ type: "row", index: row })
+
+        // Play bonus sound and show floating points
+        setTimeout(() => {
+          playSound("bonus")
+          addFloatingPoints(25, pointX, pointY - 20, true)
+        }, 300)
+      }
+
+      // Check column completion
+      if (isColumnComplete(newBoard, col)) {
+        scoreChange += 25
+        message += " Column complete! +25 bonus points."
+        newCompletedSections.push({ type: "column", index: col })
+
+        // Play bonus sound and show floating points with slight delay
+        setTimeout(() => {
+          playSound("bonus")
+          addFloatingPoints(25, pointX + 20, pointY - 20, true)
+        }, 600)
+      }
+
+      // Check box completion
+      const boxRow = Math.floor(row / 3)
+      const boxCol = Math.floor(col / 3)
+      if (isBoxComplete(newBoard, boxRow, boxCol)) {
+        scoreChange += 50
+        message += " Box complete! +50 bonus points."
+        newCompletedSections.push({ type: "box", index: boxRow * 3 + boxCol, boxRow, boxCol })
+
+        // Play bonus sound and show floating points with slight delay
+        setTimeout(() => {
+          playSound("complete")
+          addFloatingPoints(50, pointX - 20, pointY - 20, true)
+        }, 900)
+      }
+
+      // If there are completed sections, show the animation
+      if (newCompletedSections.length > 0) {
+        setCompletedSections(newCompletedSections)
+
+        // Clear the completed sections after animation
+        setTimeout(() => {
+          setCompletedSections([])
+        }, 1800) // Animation lasts 1.8s (3 flashes)
+      }
+    } else {
+      // Play invalid sound
+      playSound("invalid")
+
+      // Show floating points for penalty
+      addFloatingPoints(-10, pointX, pointY)
+
+      // For invalid moves, show animation but don't update board
+      setInvalidCell([row, col, number])
+
+      // If pool is empty, give the tile to the opponent
+      if (newPool.length === 0) {
+        updatedPlayers[1].hand.push(number)
+        message += " Tile given to opponent."
+      } else {
+        // Otherwise return the tile to the pool
+        newPool.push(number)
+        // Shuffle the pool
+        newPool.sort(() => Math.random() - 0.5)
+        message += " Tile returned to pool."
+      }
+
+      // Clear the invalid cell after animation
+      setTimeout(() => {
+        setInvalidCell(null)
+      }, 1500)
+    }
+
+    // Update player's score and hand
+    updatedPlayers[0] = {
+      ...updatedPlayers[0],
+      score: updatedPlayers[0].score + scoreChange,
+      hand: updatedPlayerHand,
+    }
+
+    // Draw a new tile if possible
+    if (newPool.length > 0) {
+      const newTile = newPool.pop()
+      updatedPlayers[0].hand.push(newTile!)
+      message += " Drew a new tile."
+
+      // Play draw sound
+      setTimeout(() => {
+        playSound("draw")
+      }, 500)
+    }
+
+    // Check if game should end
+    const gameOver = shouldGameEnd(newBoard, updatedPlayers[0].hand, updatedPlayers[1].hand, newPool)
+
+    let nextPlayer = 1 // Default to computer's turn
+    if (!gameOver && updatedPlayers[1].hand.length === 0) {
+      message += " Computer has no tiles. Your turn continues."
+      nextPlayer = 0 // Keep it as player's turn
+    }
+
+    setGameState({
+      ...gameState,
+      board: newBoard,
+      players: updatedPlayers,
+      pool: newPool,
+      currentPlayer: nextPlayer,
+      message,
+      gameOver,
+    })
+
+    setSelectedCell(null)
+    setSelectedNumber(null)
+
+    // If game is over, show winner
+    if (gameOver) {
+      endGame(updatedPlayers)
+    }
+  }
+
   // Update the message area and score display for better contrast
   return (
     <div className="flex flex-col gap-1">
-      {!gameState ? (
-        <div className="flex flex-col gap-2 p-2 md:p-3 rounded-xl kraft-paper shadow-xl border-2 border-[#8C653C]">
-          <h2 className="text-lg md:text-xl font-bold text-[#4B3418]">Game Settings</h2>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="difficulty" className="text-sm font-medium text-[#6B4D28]">
-              Difficulty
-            </label>
-            <Select value={difficulty} onValueChange={(value: string) => setDifficulty(value as "easy" | "medium" | "hard")}>
-              <SelectTrigger id="difficulty" className="bg-[#F9EED7] border-[#8C653C] text-[#4B3418]">
-                <SelectValue placeholder="Select difficulty" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#F9EED7] border-[#8C653C]">
-                <SelectItem value="easy" className="text-[#4B3418] focus:bg-[#F5DFB3]">
-                  Easy
-                </SelectItem>
-                <SelectItem value="medium" className="text-[#4B3418] focus:bg-[#F5DFB3]">
-                  Medium
-                </SelectItem>
-                <SelectItem value="hard" className="text-[#4B3418] focus:bg-[#F5DFB3]">
-                  Hard
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            onClick={startNewGame}
-            className="bg-gradient-to-r from-[#B58853] to-[#9E7142] hover:from-[#A07647] hover:to-[#8C653C] text-white font-bold shadow-lg hover:shadow-xl transition-all mt-1 border border-[#8C653C]"
-          >
-            START GAME
-          </Button>
-        </div>
-      ) : (
+      <div className="flex flex-col gap-2 p-2 md:p-3 rounded-xl kraft-paper shadow-xl border-2 border-[#8C653C]">
+        {!gameState && (
+          <>
+            <h2 className="text-lg md:text-xl font-bold text-[#4B3418]">Game Settings</h2>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="difficulty" className="text-sm font-medium text-[#6B4D28]">
+                Difficulty
+              </label>
+              <Select value={difficulty} onValueChange={(value: string) => setDifficulty(value as "easy" | "medium" | "hard")}>
+                <SelectTrigger id="difficulty" className="bg-[#F9EED7] border-[#8C653C] text-[#4B3418]">
+                  <SelectValue placeholder="Select difficulty" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#F9EED7] border-[#8C653C]">
+                  <SelectItem value="easy" className="text-[#4B3418] focus:bg-[#F5DFB3]">
+                    Easy
+                  </SelectItem>
+                  <SelectItem value="medium" className="text-[#4B3418] focus:bg-[#F5DFB3]">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="hard" className="text-[#4B3418] focus:bg-[#F5DFB3]">
+                    Hard
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={startNewGame}
+              className="bg-gradient-to-r from-[#B58853] to-[#9E7142] hover:from-[#A07647] hover:to-[#8C653C] text-white font-bold shadow-lg hover:shadow-xl transition-all mt-1 border border-[#8C653C]"
+            >
+              START GAME
+            </Button>
+          </>
+        )}
+      </div>
+
+      {gameState && (
         <>
-          <div className="flex justify-between items-center mb-1 p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
+          <div className="flex justify-between items-center p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
             <div className="text-sm md:text-base font-bold text-[#4B3418]">
               <span className="text-[#1B998B]">YOU:</span> {gameState.players[0].score}
             </div>
@@ -719,6 +880,7 @@ export default function SudokuGame() {
               currentPlayer={gameState.currentPlayer}
               gameOver={gameState.gameOver}
               selectedNumber={selectedNumber}
+              revealedCell={gameState.revealedCell}
             />
           </div>
 
@@ -730,6 +892,7 @@ export default function SudokuGame() {
               tiles={gameState.players[0].hand}
               onTileSelect={handleTileSelect}
               disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
+              highlightedTileIndex={gameState.stolenTileIndex}
             />
           </div>
 
@@ -755,12 +918,27 @@ export default function SudokuGame() {
             isVisible={showEndMessage && gameState.gameOver && gameState.players[0].score > gameState.players[1].score}
             score={gameState.players[0].score}
             onClose={handleCloseEndMessage}
+            onPlayAgain={() => {
+              handleCloseEndMessage();
+              startNewGame();
+            }}
           />
           
           <DefeatMessage
             isVisible={showEndMessage && gameState.gameOver && gameState.players[0].score < gameState.players[1].score}
             score={gameState.players[0].score}
             onClose={handleCloseEndMessage}
+            onPlayAgain={() => {
+              handleCloseEndMessage();
+              startNewGame();
+            }}
+          />
+
+          <PowerUpNotification
+            isVisible={powerUpNotification.isVisible}
+            action={powerUpNotification.action}
+            player={powerUpNotification.player}
+            onClose={() => setPowerUpNotification(prev => ({ ...prev, isVisible: false }))}
           />
         </>
       )}

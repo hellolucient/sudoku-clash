@@ -6,9 +6,10 @@ type DefeatMessageProps = {
   isVisible: boolean
   score: number
   onClose: () => void
+  onPlayAgain: () => void
 }
 
-export default function DefeatMessage({ isVisible, score, onClose }: DefeatMessageProps) {
+export default function DefeatMessage({ isVisible, score, onClose, onPlayAgain }: DefeatMessageProps) {
   useEffect(() => {
     if (!isVisible) return
   }, [isVisible])
@@ -27,9 +28,17 @@ export default function DefeatMessage({ isVisible, score, onClose }: DefeatMessa
         <h2 className="text-4xl font-bold text-[#F9EED7] mb-2 text-center opacity-80">
           You Lost
         </h2>
-        <p className="text-2xl text-[#CC4B37] font-bold text-center">
+        <p className="text-2xl text-[#CC4B37] font-bold text-center mb-4">
           Score: {score}
         </p>
+        <div className="flex justify-center">
+          <button
+            onClick={onPlayAgain}
+            className="bg-gradient-to-r from-[#CC4B37] to-[#8C3527] hover:from-[#BC3B27] hover:to-[#7C2517] text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+          >
+            Play Again
+          </button>
+        </div>
       </div>
     </div>
   )

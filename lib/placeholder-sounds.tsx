@@ -64,9 +64,15 @@ export function generateTone(
 }
 
 // Play a generated tone
-export function playTone(frequency = 440, duration = 0.2, volume = 0.1, type: OscillatorType = "sine"): void {
+export async function playTone(frequency = 440, duration = 0.2, volume = 0.1, type: OscillatorType = "sine"): Promise<void> {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    
+    // Ensure audio context is resumed
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume()
+    }
+
     const oscillator = audioContext.createOscillator()
     const gainNode = audioContext.createGain()
 
@@ -85,30 +91,54 @@ export function playTone(frequency = 440, duration = 0.2, volume = 0.1, type: Os
     // Stop after duration
     oscillator.stop(audioContext.currentTime + duration)
   } catch (error) {
-    console.log("Error playing tone:", error)
+    console.error("Error playing tone:", error)
   }
 }
 
 // Sound presets for different game events
 export const soundPresets = {
-  place: () => playTone(440, 0.15, 0.1, "sine"),
-  invalid: () => playTone(220, 0.3, 0.1, "square"),
-  complete: () => {
-    playTone(523.25, 0.1, 0.1, "sine")
-    setTimeout(() => playTone(659.25, 0.1, 0.1, "sine"), 100)
-    setTimeout(() => playTone(783.99, 0.2, 0.1, "sine"), 200)
+  place: async () => await playTone(440, 0.15, 0.1, "sine"),
+  invalid: async () => await playTone(220, 0.3, 0.1, "square"),
+  complete: async () => {
+    await playTone(523.25, 0.1, 0.1, "sine")
+    await new Promise(resolve => setTimeout(resolve, 100))
+    await playTone(659.25, 0.1, 0.1, "sine")
+    await new Promise(resolve => setTimeout(resolve, 100))
+    await playTone(783.99, 0.2, 0.1, "sine")
   },
-  bonus: () => {
-    playTone(523.25, 0.1, 0.1, "sine")
-    setTimeout(() => playTone(659.25, 0.2, 0.1, "sine"), 100)
+  bonus: async () => {
+    await playTone(523.25, 0.1, 0.1, "sine")
+    await new Promise(resolve => setTimeout(resolve, 100))
+    await playTone(659.25, 0.2, 0.1, "sine")
   },
-  gameOver: () => {
-    playTone(440, 0.1, 0.1, "sine")
-    setTimeout(() => playTone(392, 0.1, 0.1, "sine"), 100)
-    setTimeout(() => playTone(349.23, 0.1, 0.1, "sine"), 200)
-    setTimeout(() => playTone(329.63, 0.3, 0.1, "sine"), 300)
+  gameOver: async () => {
+    await playTone(440, 0.1, 0.1, "sine")
+    await new Promise(resolve => setTimeout(resolve, 100))
+    await playTone(392, 0.1, 0.1, "sine")
+    await new Promise(resolve => setTimeout(resolve, 100))
+    await playTone(349.23, 0.1, 0.1, "sine")
+    await new Promise(resolve => setTimeout(resolve, 100))
+    await playTone(329.63, 0.3, 0.1, "sine")
   },
-  select: () => playTone(330, 0.05, 0.05, "sine"),
-  draw: () => playTone(392, 0.1, 0.05, "sine"),
+  select: async () => await playTone(330, 0.05, 0.05, "sine"),
+  draw: async () => await playTone(392, 0.1, 0.05, "sine"),
+  levelUp: async () => {
+    // Play an ascending major arpeggio with a final chord
+    await playTone(523.25, 0.15, 0.1, "sine") // C
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await playTone(659.25, 0.15, 0.1, "sine") // E
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await playTone(783.99, 0.15, 0.1, "sine") // G
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await playTone(1046.50, 0.15, 0.1, "sine") // High C
+    await new Promise(resolve => setTimeout(resolve, 150))
+    // Final chord
+    await Promise.all([
+      playTone(523.25, 0.4, 0.08, "sine"), // C
+      playTone(659.25, 0.4, 0.08, "sine"), // E
+      playTone(783.99, 0.4, 0.08, "sine"), // G
+      playTone(1046.50, 0.4, 0.08, "sine") // High C
+    ])
+  }
 }
 

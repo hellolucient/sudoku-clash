@@ -1,6 +1,6 @@
 "use client"
 
-import type { SoundType } from "./sound-manager"
+import type { SoundType } from "@/components/sound-manager"
 
 // Helper to play sounds with fallback
 export function playSound(type: SoundType) {

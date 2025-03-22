@@ -6,10 +6,11 @@ import { useState } from "react"
 type PlayerHandProps = {
   tiles: number[]
   onTileSelect: (index: number) => void
-  disabled: boolean
+  disabled?: boolean
+  highlightedTileIndex?: number
 }
 
-export default function PlayerHand({ tiles = [], onTileSelect, disabled = false }: PlayerHandProps) {
+export default function PlayerHand({ tiles, onTileSelect, disabled = false, highlightedTileIndex }: PlayerHandProps) {
   // If tiles is not provided or empty, show empty state
   if (!tiles || tiles.length === 0) {
     return (
@@ -22,19 +23,22 @@ export default function PlayerHand({ tiles = [], onTileSelect, disabled = false 
   }
 
   return (
-    <div className="flex justify-center space-x-1 md:space-x-2">
-      {tiles.map((value, index) => (
+    <div className="grid grid-cols-8 gap-1">
+      {tiles.map((tile, index) => (
         <button
-          key={`hand-${index}`}
-          className={cn(
-            "number-tile w-10 h-10 md:w-14 md:h-14 flex items-center justify-center text-lg md:text-xl font-bold text-[#4B3418]",
-            disabled && "opacity-50 cursor-not-allowed"
-          )}
-          onClick={() => !disabled && onTileSelect(index)}
+          key={`${index}-${tile}`}
+          onClick={() => onTileSelect(index)}
           disabled={disabled}
-          aria-label={`Select number ${value}`}
+          className={`
+            relative flex items-center justify-center
+            w-10 h-10 md:w-12 md:h-12
+            rounded-lg number-tile
+            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
+            ${highlightedTileIndex === index ? 'animate-pulse border-2 border-[#1B998B]' : ''}
+            transition-all
+          `}
         >
-          {value}
+          {tile}
         </button>
       ))}
     </div>

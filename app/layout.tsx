@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { PlayerProfileProvider } from '../contexts/player-profile-context'
+import SoundManager from '@/components/sound-manager'
 
 export const metadata: Metadata = {
   title: 'Sudoku Clash',
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body>
         <PlayerProfileProvider>
           {children}
+          <SoundManager />
         </PlayerProfileProvider>
       </body>
     </html>

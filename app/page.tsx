@@ -1,6 +1,5 @@
 import SudokuGame from "@/components/sudoku-game"
 import FloatingPoints from "@/components/floating-points"
-import SoundManager from "@/lib/sound-manager"
 import ProfileManagement from "@/components/profile-management"
 
 export default function Home() {
@@ -13,7 +12,6 @@ export default function Home() {
         <ProfileManagement />
         <SudokuGame />
         <FloatingPoints />
-        <SoundManager />
       </div>
     </main>
   )

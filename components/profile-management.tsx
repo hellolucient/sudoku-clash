@@ -82,20 +82,32 @@ const PowerupDisplay: React.FC = () => {
   return (
     <div className="flex gap-2 mt-1">
       <div className="flex-1 bg-[#F9EED7]/80 rounded-lg p-1 border border-[#8C653C] text-center">
-        <div className="text-[#F37B60] text-xs font-bold">Peek</div>
-        <div className="text-[#4B3418] font-bold">{profile.powerups.peek}</div>
+        <div className="flex items-center gap-1">
+          <span role="img" aria-label="peek">👁️</span>
+          <div className="text-[#2196F3] text-xs font-bold">Peek</div>
+          <div className="text-[#4B3418] font-bold">{profile.powerups.peek}</div>
+        </div>
       </div>
       <div className="flex-1 bg-[#F9EED7]/80 rounded-lg p-1 border border-[#8C653C] text-center">
-        <div className="text-[#4CAF50] text-xs font-bold">Swap</div>
-        <div className="text-[#4B3418] font-bold">{profile.powerups.swap}</div>
+        <div className="flex items-center gap-1">
+          <span role="img" aria-label="swap">🔄</span>
+          <div className="text-[#2196F3] text-xs font-bold">Swap</div>
+          <div className="text-[#4B3418] font-bold">{profile.powerups.swap}</div>
+        </div>
       </div>
       <div className="flex-1 bg-[#F9EED7]/80 rounded-lg p-1 border border-[#8C653C] text-center">
-        <div className="text-[#2196F3] text-xs font-bold">Hint</div>
-        <div className="text-[#4B3418] font-bold">{profile.powerups.hint}</div>
+        <div className="flex items-center gap-1">
+          <span role="img" aria-label="steal">🫳</span>
+          <div className="text-[#2196F3] text-xs font-bold">Steal</div>
+          <div className="text-[#4B3418] font-bold">{profile.powerups.steal}</div>
+        </div>
       </div>
       <div className="flex-1 bg-[#F9EED7]/80 rounded-lg p-1 border border-[#8C653C] text-center">
-        <div className="text-[#FFC107] text-xs font-bold">Safe</div>
-        <div className="text-[#4B3418] font-bold">{profile.powerups.safePlay}</div>
+        <div className="flex items-center gap-1">
+          <span role="img" aria-label="skip">⏭️</span>
+          <div className="text-[#2196F3] text-xs font-bold">Skip</div>
+          <div className="text-[#4B3418] font-bold">{profile.powerups.skip}</div>
+        </div>
       </div>
     </div>
   );

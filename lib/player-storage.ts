@@ -98,10 +98,10 @@ export const createNewProfile = (name: string): PlayerProfile => {
     experience: 0,
     experienceToNextLevel: 100, // Define your XP progression curve
     powerups: {
-      peek: 3,     // Start with 3 of each basic powerup
+      peek: 3,
       swap: 3,
-      hint: 3,
-      safePlay: 3,
+      steal: 3,
+      skip: 3,
     },
     preferences: {
       theme: 'default',

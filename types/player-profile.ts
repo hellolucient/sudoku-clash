@@ -31,8 +31,8 @@ export type PlayerProfile = {
   powerups: {
     peek: number;            // How many of each powerup they have
     swap: number;
-    hint: number;
-    safePlay: number;
+    steal: number;
+    skip: number;
     // Add more as we implement them
   };
   

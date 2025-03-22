@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PlayerProfile, GameResult } from '../types/player-profile';
 import { loadPlayerProfile, savePlayerProfile, createNewProfile } from '../lib/player-storage';
+import LevelUpCelebration from '../components/level-up-celebration';
+import { playSound } from '@/lib/game-utils';
 
 interface PlayerProfileContextType {
   profile: PlayerProfile | null;
@@ -30,10 +32,23 @@ const PlayerProfileContext = createContext<PlayerProfileContextType | undefined>
 export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [newLevel, setNewLevel] = useState(1);
 
   // Load profile on initial mount
   useEffect(() => {
     const loadedProfile = loadPlayerProfile();
+    
+    // Ensure all power-ups are properly initialized
+    if (loadedProfile && (!loadedProfile.powerups.steal || !loadedProfile.powerups.skip)) {
+      loadedProfile.powerups = {
+        peek: loadedProfile.powerups.peek || 3,
+        swap: loadedProfile.powerups.swap || 3,
+        steal: 3,
+        skip: 3
+      };
+    }
+    
     setProfile(loadedProfile);
     setIsLoading(false);
   }, []);
@@ -181,22 +196,32 @@ export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ c
     if (!profile) return;
     
     let { level, experience, experienceToNextLevel } = profile;
+    let powerups = { ...profile.powerups };
+    let shouldUpdate = false;
     
-    // While player has enough XP to level up
+    // While player has enough XP to level up (including equal to)
     while (experience >= experienceToNextLevel) {
+      shouldUpdate = true;
       // Level up
       level += 1;
-      experience -= experienceToNextLevel;
+      // Calculate excess XP to carry over
+      experience = experience - experienceToNextLevel;
+      // Set new XP threshold for next level
       experienceToNextLevel = calculateNextLevelXP(level);
       
       // Award powerups for leveling up
-      const powerups = { ...profile.powerups };
       powerups.peek += 1;
       powerups.swap += 1;
-      powerups.hint += 1;
-      powerups.safePlay += 1;
-      
-      // Update profile
+      powerups.steal += 1;
+      powerups.skip += 1;
+
+      // Show level up celebration
+      setNewLevel(level);
+      setShowLevelUp(true);
+    }
+    
+    // Only update if there was a level up
+    if (shouldUpdate) {
       setProfile({
         ...profile,
         level,
@@ -213,12 +238,15 @@ export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ c
   const addExperience = (amount: number) => {
     if (!profile) return;
     
+    const newExperience = profile.experience + amount;
+    
+    // First update the experience
     setProfile({
       ...profile,
-      experience: profile.experience + amount
+      experience: newExperience
     });
     
-    // Check for level up
+    // Then check for level up with the new experience value
     checkForLevelUp();
   };
 
@@ -328,8 +356,26 @@ export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ c
   };
 
   return (
-    <PlayerProfileContext.Provider value={value}>
+    <PlayerProfileContext.Provider
+      value={{
+        profile,
+        isLoading,
+        createProfile,
+        updateProfile,
+        updateStats,
+        addExperience,
+        usePowerup,
+        addPowerup,
+        unlockAchievement,
+        updateAchievementProgress
+      }}
+    >
       {children}
+      <LevelUpCelebration
+        isVisible={showLevelUp}
+        newLevel={newLevel}
+        onClose={() => setShowLevelUp(false)}
+      />
     </PlayerProfileContext.Provider>
   );
 };

@@ -7,9 +7,10 @@ type VictoryCelebrationProps = {
   isVisible: boolean
   score: number
   onClose: () => void
+  onPlayAgain: () => void
 }
 
-export default function VictoryCelebration({ isVisible, score, onClose }: VictoryCelebrationProps) {
+export default function VictoryCelebration({ isVisible, score, onClose, onPlayAgain }: VictoryCelebrationProps) {
   useEffect(() => {
     if (!isVisible) return
 
@@ -51,9 +52,17 @@ export default function VictoryCelebration({ isVisible, score, onClose }: Victor
         <h2 className="text-4xl font-bold text-[#F9EED7] mb-2 text-center">
           Victory!
         </h2>
-        <p className="text-2xl text-[#F5BC41] font-bold text-center">
+        <p className="text-2xl text-[#F5BC41] font-bold text-center mb-4">
           Score: {score}
         </p>
+        <div className="flex justify-center">
+          <button
+            onClick={onPlayAgain}
+            className="bg-gradient-to-r from-[#F5BC41] to-[#CC7A4D] hover:from-[#E5AC31] hover:to-[#BC6A3D] text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+          >
+            Play Again
+          </button>
+        </div>
       </div>
     </div>
   )

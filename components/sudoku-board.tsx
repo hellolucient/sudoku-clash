@@ -19,6 +19,7 @@ type SudokuBoardProps = {
   currentPlayer: number
   gameOver: boolean
   selectedNumber: number | null
+  revealedCell?: { row: number; col: number; value: number }
 }
 
 export default function SudokuBoard({
@@ -31,6 +32,7 @@ export default function SudokuBoard({
   currentPlayer,
   gameOver,
   selectedNumber,
+  revealedCell
 }: SudokuBoardProps) {
   const isSelectedCell = (row: number, col: number) => {
     return selectedCell && selectedCell[0] === row && selectedCell[1] === col
@@ -82,6 +84,37 @@ export default function SudokuBoard({
     return board[row][col] !== null ? "number-tile" : "bg-[#F9EED7] hover:bg-[#F5DFB3]"
   }
 
+  const getCellContent = (row: number, col: number) => {
+    // Show revealed number if this is the revealed cell
+    if (revealedCell && revealedCell.row === row && revealedCell.col === col) {
+      return revealedCell.value
+    }
+
+    return board[row][col]
+  }
+
+  const getCellClasses = (row: number, col: number) => {
+    const isSelected = selectedCell?.[0] === row && selectedCell?.[1] === col
+    const isComputerSelected = computerSelectedCell?.[0] === row && computerSelectedCell?.[1] === col
+    const isInvalid = invalidCell?.[0] === row && invalidCell?.[1] === col
+    const isRevealed = revealedCell?.row === row && revealedCell?.col === col
+    const value = board[row][col]
+    const isHighlighted = value !== null && value === selectedNumber
+
+    return `
+      relative flex items-center justify-center
+      ${getCellBorderClasses(row, col)}
+      ${isSelected ? 'bg-[#F5BC41]/20' : ''}
+      ${isComputerSelected ? 'bg-[#CC7A4D]/20' : ''}
+      ${isInvalid ? 'animate-shake' : ''}
+      ${isHighlighted ? 'bg-[#F5BC41]/10' : ''}
+      ${isRevealed ? 'bg-[#1B998B]/20' : ''}
+      ${value === null ? 'hover:bg-[#F5BC41]/10 cursor-pointer' : ''}
+      ${gameOver ? 'cursor-default' : ''}
+      transition-colors
+    `
+  }
+
   // Group the cells into 3x3 boxes for better rendering
   const renderBoxes = () => {
     const boxes = [];
@@ -127,7 +160,7 @@ export default function SudokuBoard({
                 
                 {/* Cell content */}
                 <div className="relative z-10">
-                  {isInvalid ? getInvalidCellValue() : board[row][col] !== null ? board[row][col] : ""}
+                  {getCellContent(row, col)}
                 </div>
 
                 {/* Localized flash animation for invalid cells */}
