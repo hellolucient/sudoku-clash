@@ -8,9 +8,10 @@ type PlayerHandProps = {
   onTileSelect: (index: number) => void
   disabled?: boolean
   highlightedTileIndex?: number
+  isSwapActive?: boolean
 }
 
-export default function PlayerHand({ tiles, onTileSelect, disabled = false, highlightedTileIndex }: PlayerHandProps) {
+export default function PlayerHand({ tiles, onTileSelect, disabled = false, highlightedTileIndex, isSwapActive }: PlayerHandProps) {
   // If tiles is not provided or empty, show empty state
   if (!tiles || tiles.length === 0) {
     return (
@@ -35,6 +36,7 @@ export default function PlayerHand({ tiles, onTileSelect, disabled = false, high
             rounded-lg number-tile
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg'}
             ${highlightedTileIndex === index ? 'scale-110 shadow-lg translate-y-[-4px] border-2 border-[#1B998B] z-10 animate-slow-pulse' : ''}
+            ${isSwapActive ? 'animate-slow-pulse border-2 border-[#1B998B]' : ''}
             transition-all duration-300
           `}
         >

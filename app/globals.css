@@ -451,15 +451,15 @@
 @keyframes slow-pulse {
   0%, 100% {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.05);
+    opacity: 0.6;
+    transform: scale(1.1);
   }
 }
 
 .animate-slow-pulse {
-  animation: slow-pulse 3s ease-in-out infinite;
+  animation: slow-pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 

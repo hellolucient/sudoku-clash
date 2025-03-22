@@ -1011,8 +1011,9 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
             <PlayerHand
               tiles={gameState.players[0].hand}
               onTileSelect={handleTileSelect}
-              disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
               highlightedTileIndex={gameState.stolenTileIndex}
+              disabled={gameState.currentPlayer !== 0 || gameState.gameOver}
+              isSwapActive={gameState?.activePowerUp === 'swap'}
             />
           </div>
 
