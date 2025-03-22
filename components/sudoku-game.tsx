@@ -652,20 +652,21 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         break
 
       case 'steal':
-        if (gameState.players[1].hand.length > 0) {
-          const cpuHand = [...gameState.players[1].hand]
-          const randomIndex = Math.floor(Math.random() * cpuHand.length)
-          const stolenTile = cpuHand.splice(randomIndex, 1)[0]
-          updatedGameState.players[1].hand = cpuHand
+        // Steal a random tile from CPU's hand
+        if (updatedGameState.players[1].hand.length > 0) {
+          const randomIndex = Math.floor(Math.random() * updatedGameState.players[1].hand.length)
+          const stolenTile = updatedGameState.players[1].hand.splice(randomIndex, 1)[0]
           updatedGameState.players[0].hand.push(stolenTile)
+          updatedGameState.message = `Stole a ${stolenTile} from CPU! Your turn.`
           updatedGameState.stolenTileIndex = updatedGameState.players[0].hand.length - 1
-          updatedGameState.message = `Stole a ${stolenTile} from CPU!`
           updatedGameState.activePowerUp = null // Immediately deactivate since no further action needed
 
           // Clear the stolen tile highlight after 2 seconds
           setTimeout(() => {
             setGameState(prev => prev ? { ...prev, stolenTileIndex: undefined } : null)
           }, 2000)
+        } else {
+          updatedGameState.message = "CPU has no tiles to steal!"
         }
         break
 
