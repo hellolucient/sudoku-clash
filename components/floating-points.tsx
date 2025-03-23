@@ -9,6 +9,7 @@ type FloatingPoint = {
   x: number
   y: number
   isBonus?: boolean
+  message?: string
 }
 
 export default function FloatingPoints() {
@@ -17,18 +18,18 @@ export default function FloatingPoints() {
   // Listen for custom events to add floating points
   useEffect(() => {
     const handleAddPoints = (e: CustomEvent) => {
-      const { value, x, y, isBonus } = e.detail
+      const { value, x, y, isBonus, message } = e.detail
 
       // Generate a unique ID for this floating point
       const id = Date.now() + Math.random()
 
       // Add the new floating point
-      setPoints((prev) => [...prev, { id, value, x, y, isBonus }])
+      setPoints((prev) => [...prev, { id, value, x, y, isBonus, message }])
 
       // Remove it after animation completes
       setTimeout(() => {
         setPoints((prev) => prev.filter((p) => p.id !== id))
-      }, 1500) // Match animation duration (reduced from 2000)
+      }, 1500) // Match animation duration
     }
 
     // Add event listener
@@ -58,7 +59,7 @@ export default function FloatingPoints() {
             top: `${point.y}px`,
           }}
         >
-          {point.value > 0 ? `+${point.value}` : point.value}
+          {point.message || (point.value > 0 ? `+${point.value}` : point.value)}
         </div>
       ))}
     </div>

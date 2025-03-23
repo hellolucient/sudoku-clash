@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { soundPresets } from "@/lib/placeholder-sounds"
 
 // Define sound types
-export type SoundType = "place" | "invalid" | "complete" | "bonus" | "gameOver" | "select" | "draw" | "levelUp"
+export type SoundType = "place" | "invalid" | "complete" | "bonus" | "gameOver" | "select" | "draw" | "levelUp" | "tick"
 
 // Define custom event type
 interface PlaySoundEvent extends CustomEvent {
@@ -23,7 +23,8 @@ export default function SoundManager() {
     gameOver: false,
     select: false,
     draw: false,
-    levelUp: false
+    levelUp: false,
+    tick: false
   })
 
   // Listen for play sound events
@@ -60,6 +61,9 @@ export default function SoundManager() {
           case "levelUp":
             console.log('Playing level up sound') // Debug log
             await soundPresets.levelUp()
+            break
+          case "tick":
+            await soundPresets.tick()
             break
         }
       } catch (error) {

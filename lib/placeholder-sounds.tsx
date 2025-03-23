@@ -139,6 +139,7 @@ export const soundPresets = {
       playTone(783.99, 0.4, 0.08, "sine"), // G
       playTone(1046.50, 0.4, 0.08, "sine") // High C
     ])
-  }
+  },
+  tick: async () => await playTone(880, 0.05, 0.05, "sine") // High-pitched, very short tick sound
 }
 

@@ -20,6 +20,8 @@ type SudokuBoardProps = {
   gameOver: boolean
   selectedNumber: number | null
   revealedCell?: { row: number; col: number; value: number }
+  starCell?: { row: number; col: number }
+  isBonusActive?: boolean
 }
 
 export default function SudokuBoard({
@@ -32,7 +34,9 @@ export default function SudokuBoard({
   currentPlayer,
   gameOver,
   selectedNumber,
-  revealedCell
+  revealedCell,
+  starCell,
+  isBonusActive
 }: SudokuBoardProps) {
   const isSelectedCell = (row: number, col: number) => {
     return selectedCell && selectedCell[0] === row && selectedCell[1] === col
@@ -131,6 +135,7 @@ export default function SudokuBoard({
             const isCompleted = isInCompletedSection(row, col);
             const isComputer = isComputerSelectedCell(row, col);
             const isSameNum = isSameNumber(row, col);
+            const isStarCell = starCell?.row === row && starCell?.col === col;
             
             cells.push(
               <div
@@ -162,6 +167,13 @@ export default function SudokuBoard({
                 <div className="relative z-10">
                   {getCellContent(row, col)}
                 </div>
+
+                {/* Star cell */}
+                {isStarCell && !board[row][col] && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <span className="text-2xl md:text-3xl animate-pulse">⭐</span>
+                  </div>
+                )}
 
                 {/* Localized flash animation for invalid cells */}
                 {isInvalid && (

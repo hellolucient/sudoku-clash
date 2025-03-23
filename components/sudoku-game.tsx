@@ -9,10 +9,12 @@ import VictoryCelebration from "./victory-celebration"
 import DefeatMessage from "./defeat-message"
 import { generateSudokuPuzzle } from "@/lib/sudoku-generator"
 import { checkValidPlacement, isRowComplete, isColumnComplete, isBoxComplete } from "@/lib/sudoku-validator"
-import { playSound, addFloatingPoints } from "@/lib/game-utils"
+import { playSound, addFloatingPoints, setMuted } from "@/lib/game-utils"
 import { usePlayerProfile } from "../contexts/player-profile-context"
 import PowerUpButton from "./power-up-button"
 import PowerUpNotification from "./power-up-notification"
+import BonusTimer from "./bonus-timer"
+import MuteButton from "./mute-button"
 
 type Player = {
   name: string
@@ -41,6 +43,9 @@ type GameState = {
   stolenTileIndex?: number
   powerUpUsedThisTurn?: boolean
   lastUsedPowerUp?: PowerUpType | null
+  starCell?: { row: number; col: number }
+  isBonusActive: boolean
+  bonusEndTime?: number
 }
 
 type CompletedSection = {
@@ -81,6 +86,7 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     action: 'peek',
     player: 'player'
   })
+  const [isMuted, setIsMuted] = useState(false)
 
   // Start game automatically when component mounts
   useEffect(() => {
@@ -110,6 +116,19 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     const playerHand = pool.splice(0, 7)
     const computerHand = pool.splice(0, 7)
 
+    // Find empty cells to place the star
+    const emptyCells: { row: number; col: number }[] = []
+    puzzle.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === null) {
+          emptyCells.push({ row: rowIndex, col: colIndex })
+        }
+      })
+    })
+
+    // Randomly select one empty cell for the star
+    const starCell = emptyCells[Math.floor(Math.random() * emptyCells.length)]
+
     // Reset power-ups to initial values
     if (profile) {
       const powerups = { ...profile.powerups, swap: 3 }
@@ -130,21 +149,27 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       board: puzzle,
       solution,
       pool,
-      currentPlayer: 0, // 0 for player, 1 for computer
+      currentPlayer: 0,
       players: [
         { name: "You", score: 0, hand: playerHand },
         { name: "Computer", score: 0, hand: computerHand },
       ],
       gameOver: false,
       message: "Your turn! Select a cell and then a number from your hand.",
-      startTime: Date.now(), // Track when the game started
+      startTime: Date.now(),
       powerUps: initialPowerUps,
+      powerUpUsedThisTurn: false,
+      lastUsedPowerUp: null,
+      starCell,
+      isBonusActive: false,
+      bonusEndTime: undefined
     })
 
     setSelectedCell(null)
     setSelectedNumber(null)
-    setInvalidCells([])
+    setInvalidCell(null)
     setCompletedSections([])
+    setComputerSelectedCell(null)
   }
 
   // Count empty cells on the board
@@ -273,7 +298,7 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     }, 1500)
 
     return () => clearTimeout(timeoutId)
-  }, [gameState])
+  }, [gameState?.currentPlayer]) // Only trigger when currentPlayer changes to 1
 
   const computerMove = () => {
     if (!gameState) return
@@ -345,7 +370,7 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       pointY = rect.top + rect.height / 2
     }
 
-    // Delay the actual move to show the selection (increased from 1 second to 1.5 seconds)
+    // Delay the actual move to show the selection
     setTimeout(() => {
       // Update the board
       const newBoard = gameState.board.map((r) => [...r])
@@ -354,21 +379,18 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       const updatedComputerHand = [...gameState.players[1].hand]
       updatedComputerHand.splice(move.index, 1)
 
-      // Update score
-      let scoreChange = isValid ? move.number : -10
+      // Check if this is the star cell and if the placement is valid
+      const isStarCell = gameState.starCell?.row === move.row && gameState.starCell?.col === move.col
+      const shouldActivateBonus = isStarCell && isValid
+
+      // Update score - no penalty during bonus period
+      let scoreChange = isValid ? move.number : (gameState.isBonusActive ? 0 : -10)
       let message = isValid
         ? `Computer placed ${move.number} correctly! +${move.number} points.`
         : `Computer made an invalid placement! -10 points.`
 
       const newPool = [...gameState.pool]
       const updatedPlayers = [...gameState.players]
-
-      // Update computer's hand
-      updatedPlayers[1] = {
-        ...updatedPlayers[1],
-        score: updatedPlayers[1].score + scoreChange,
-        hand: updatedComputerHand,
-      }
 
       if (isValid) {
         // Play sound
@@ -434,26 +456,46 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           }, 1800) // Animation lasts 1.8s (3 flashes)
         }
 
-        // Update computer's score with bonuses
-        updatedPlayers[1].score = updatedPlayers[1].score + scoreChange - move.number // We already added the tile value
+        // Draw a new tile if possible (only for valid moves)
+        if (newPool.length > 0) {
+          const newTile = newPool.pop()
+          updatedComputerHand.push(newTile!)
+          message += " Computer drew a new tile."
+
+          // Play draw sound
+          setTimeout(() => {
+            playSound("draw")
+          }, 500)
+        }
+
+        // If this is the star cell and the placement is valid, activate the bonus
+        if (shouldActivateBonus) {
+          message = "⭐ Computer activated star bonus! Unlimited turns for 20 seconds! ⭐"
+          playSound("bonus")
+          // Show floating bonus message
+          addFloatingPoints(0, pointX, pointY - 40, true, "⭐ CPU BONUS ACTIVATED! ⭐")
+        }
       } else {
         // Play invalid sound
         playSound("invalid")
 
-        // Show floating points for penalty
-        addFloatingPoints(-10, pointX, pointY)
+        // Show floating points for penalty - show 0 during bonus period
+        addFloatingPoints(gameState.isBonusActive ? 0 : -10, pointX, pointY)
 
         // For invalid moves, show animation but don't update board
         setInvalidCell([move.row, move.col, move.number])
 
-        // If pool is empty, give the tile to the opponent (player)
-        if (newPool.length === 0) {
+        // If pool is empty and not in bonus mode, give the tile to the opponent
+        if (newPool.length === 0 && !gameState.isBonusActive) {
+          // Remove the tile from computer's hand and give it to player
+          updatedComputerHand.splice(move.index, 1)
           updatedPlayers[0].hand.push(move.number)
           message += " Pool is empty - Invalid tile given to you as bonus!"
         } else {
-          // Keep the tile in CPU's hand when there are tiles in the pool
-          updatedComputerHand.push(move.number)
-          message += " CPU keeps the tile."
+          // Keep the tile in computer's hand (no changes needed to updatedComputerHand)
+          message += gameState.isBonusActive 
+            ? " Invalid placement! Keep your tile. Computer's turn continues (bonus active)." 
+            : " Invalid placement! Keep your tile. Your turn."
         }
 
         // Clear the invalid cell after animation
@@ -462,26 +504,32 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         }, 1500)
       }
 
-      // Draw a new tile if possible
-      if (newPool.length > 0) {
-        const newTile = newPool.pop()
-        updatedPlayers[1].hand.push(newTile!)
-        message += " Computer drew a new tile."
-
-        // Play draw sound
-        setTimeout(() => {
-          playSound("draw")
-        }, 500)
+      // Update computer's score and hand
+      updatedPlayers[1] = {
+        ...updatedPlayers[1],
+        score: updatedPlayers[1].score + scoreChange,
+        hand: updatedComputerHand,
       }
 
       // Check if game should end
       const gameOver = shouldGameEnd(newBoard, updatedPlayers[0].hand, updatedPlayers[1].hand, newPool)
 
-      let nextPlayer = 0 // Default to player's turn
+      // Determine next player
+      let nextPlayer = 0  // Default to player's turn after computer's move
       if (!gameOver && updatedPlayers[0].hand.length === 0) {
         message += " You have no tiles. Computer's turn continues."
-        nextPlayer = 1 // Keep it as computer's turn
+        nextPlayer = 1 // Keep it as computer's turn only if player has no tiles
       }
+
+      // If bonus is activated or already active, keep it as computer's turn
+      if (shouldActivateBonus || gameState.isBonusActive) {
+        nextPlayer = 1
+        message += " Computer's turn continues!"
+      }
+
+      // Maintain the bonus state and endTime if already active
+      const isBonusActive = shouldActivateBonus || gameState.isBonusActive
+      const bonusEndTime = shouldActivateBonus ? Date.now() + 20000 : gameState.bonusEndTime
 
       setGameState({
         ...gameState,
@@ -489,11 +537,12 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         players: updatedPlayers,
         pool: newPool,
         currentPlayer: nextPlayer,
+        message: message + (nextPlayer === 0 ? " Your turn!" : ""),
         gameOver,
-        message: gameOver ? determineWinner(updatedPlayers) : message + (nextPlayer === 0 ? " Your turn!" : ""),
-        // Only reset power-up flags if this wasn't after a skip
-        powerUpUsedThisTurn: gameState.lastUsedPowerUp === 'skip' ? true : false,
-        lastUsedPowerUp: gameState.lastUsedPowerUp === 'skip' ? 'skip' : null
+        powerUpUsedThisTurn: false, // Reset when turn changes
+        lastUsedPowerUp: null, // Reset when a move is made
+        isBonusActive,
+        bonusEndTime
       })
 
       setComputerSelectedCell(null)
@@ -756,9 +805,15 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     // Check if placement is valid
     const isValid = checkValidPlacement(gameState.solution, row, col, number)
 
-    // Update score
-    let scoreChange = isValid ? number : -10
-    let message = isValid ? `You placed ${number} correctly! +${number} points.` : `Invalid placement! -10 points.`
+    // Check if this is the star cell and if the placement is valid
+    const isStarCell = gameState.starCell?.row === row && gameState.starCell?.col === col
+    const shouldActivateBonus = isStarCell && isValid
+
+    // Update score - no penalty during bonus period
+    let scoreChange = isValid ? number : (gameState.isBonusActive ? 0 : -10)
+    let message = isValid
+      ? `You placed ${number} correctly! +${number} points.`
+      : `Invalid placement! ${gameState.isBonusActive ? "No penalty during bonus period." : "-10 points."}`
 
     // Create a temporary board for animation
     const newBoard = gameState.board.map((r) => [...r])
@@ -862,25 +917,35 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           playSound("draw")
         }, 500)
       }
+
+      // If this is the star cell and the placement is valid, activate the bonus
+      if (shouldActivateBonus) {
+        message = "⭐ Star bonus activated! Unlimited turns for 20 seconds! ⭐"
+        playSound("bonus")
+        // Show floating bonus message
+        addFloatingPoints(0, pointX, pointY - 40, true, "⭐ BONUS ACTIVATED! ⭐")
+      }
     } else {
       // Play invalid sound
       playSound("invalid")
 
-      // Show floating points for penalty
-      addFloatingPoints(-10, pointX, pointY)
+      // Show floating points for penalty - show 0 during bonus period
+      addFloatingPoints(gameState.isBonusActive ? 0 : -10, pointX, pointY)
 
       // For invalid moves, show animation but don't update board
       setInvalidCell([row, col, number])
 
-      // If pool is empty, give the tile to the opponent as an extra penalty
-      if (newPool.length === 0) {
+      // If pool is empty and not in bonus mode, give the tile to the opponent
+      if (newPool.length === 0 && !gameState.isBonusActive) {
         // Remove the tile from player's hand and give it to CPU
         updatedPlayerHand.splice(handIndex, 1)
         updatedPlayers[1].hand.push(number)
         message += " Pool is empty - Invalid tile given to CPU as penalty!"
       } else {
         // Keep the tile in player's hand (no changes needed to updatedPlayerHand)
-        message += " Invalid placement! Keep your tile. CPU's turn."
+        message += gameState.isBonusActive 
+          ? " Invalid placement! Keep your tile. Your turn continues (bonus active)." 
+          : " Invalid placement! Keep your tile. CPU's turn."
       }
 
       // Clear the invalid cell after animation
@@ -900,11 +965,21 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     const gameOver = shouldGameEnd(newBoard, updatedPlayers[0].hand, updatedPlayers[1].hand, newPool)
 
     // Determine next player
-    let nextPlayer = 1  // Always go to CPU after player's move (valid or invalid)
+    let nextPlayer = 1  // Default to CPU's turn after player's move
     if (!gameOver && updatedPlayers[1].hand.length === 0) {
       message += " Computer has no tiles. Your turn continues."
       nextPlayer = 0 // Keep it as player's turn only if CPU has no tiles
     }
+
+    // If bonus is activated or already active, keep it as player's turn
+    if (shouldActivateBonus || gameState.isBonusActive) {
+      nextPlayer = 0
+      message += " Your turn continues!"
+    }
+
+    // Maintain the bonus state and endTime if already active
+    const isBonusActive = shouldActivateBonus || gameState.isBonusActive
+    const bonusEndTime = shouldActivateBonus ? Date.now() + 20000 : gameState.bonusEndTime
 
     setGameState({
       ...gameState,
@@ -915,7 +990,9 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       message: message + (nextPlayer === 0 ? " Your turn!" : ""),
       gameOver,
       powerUpUsedThisTurn: false, // Reset when turn changes
-      lastUsedPowerUp: null // Reset when a move is made
+      lastUsedPowerUp: null, // Reset when a move is made
+      isBonusActive,
+      bonusEndTime
     })
 
     setSelectedCell(null)
@@ -949,9 +1026,36 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
               </div>
             </div>
           )}
-          <div className="flex justify-between items-center p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
+          <div className="flex justify-between items-center p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C] relative">
             <div className="text-sm md:text-base font-bold text-[#4B3418]">
               <span className="text-[#1B998B]">YOU:</span> {gameState.players[0].score}
+            </div>
+            <div className="flex items-center gap-2">
+              {gameState.isBonusActive && gameState.bonusEndTime && (
+                <BonusTimer
+                  endTime={gameState.bonusEndTime}
+                  onEnd={() => {
+                    setGameState(prev => prev ? {
+                      ...prev,
+                      isBonusActive: false,
+                      bonusEndTime: undefined,
+                      message: "⭐ Bonus period ended! Back to normal turns."
+                    } : null)
+                    // Show floating message for bonus end
+                    const boardRect = boardRef.current?.getBoundingClientRect()
+                    if (boardRect) {
+                      addFloatingPoints(0, boardRect.left + boardRect.width / 2, boardRect.top + boardRect.height / 2, true, "⭐ BONUS ENDED! ⭐")
+                    }
+                  }}
+                />
+              )}
+              <MuteButton 
+                isMuted={isMuted} 
+                onToggle={() => {
+                  setIsMuted(!isMuted)
+                  setMuted(!isMuted)
+                }} 
+              />
             </div>
             <div className="text-sm md:text-base font-bold text-[#4B3418]">
               <span className="text-[#CC7A4D]">CPU:</span> {gameState.players[1].score}
@@ -1001,6 +1105,8 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
               gameOver={gameState.gameOver}
               selectedNumber={selectedNumber}
               revealedCell={gameState.revealedCell}
+              starCell={gameState.starCell}
+              isBonusActive={gameState.isBonusActive}
             />
           </div>
 
