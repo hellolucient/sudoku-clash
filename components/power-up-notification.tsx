@@ -10,7 +10,7 @@ type PowerUpNotificationProps = {
   action: PowerUpType
   player: 'player' | 'cpu'
   onClose: () => void
-  gameState?: { activePowerUp?: PowerUpType | null }
+  gameState?: { activePowerUp?: PowerUpType | null, pool: number[] }
 }
 
 export default function PowerUpNotification({ isVisible, action, player, onClose, gameState }: PowerUpNotificationProps) {
@@ -37,10 +37,12 @@ export default function PowerUpNotification({ isVisible, action, player, onClose
       case 'swap':
         // If there's an active power-up, show the initial message
         if (gameState?.activePowerUp === 'swap') {
-          return 'Select a tile from YOUR HAND to swap'
+          return gameState.pool.length > 0
+            ? 'Select a tile from YOUR HAND to swap with the Pool'
+            : 'Select a tile from YOUR HAND to swap with CPU'
         }
         // Otherwise, show the completion message
-        return 'You have swapped a tile from the Pool'
+        return gameState?.pool.length ? 'You have swapped a tile with the Pool' : 'You have swapped a tile with CPU'
       case 'steal':
         return 'You stole a tile from CPU!'
       case 'skip':

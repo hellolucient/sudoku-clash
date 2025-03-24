@@ -246,22 +246,40 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     if (!gameState || gameState.gameOver || gameState.currentPlayer !== 0) return
 
     // Handle swap power-up
-    if (gameState.activePowerUp === 'swap' && gameState.pool.length > 0) {
+    if (gameState.activePowerUp === 'swap') {
       const updatedGameState = { ...gameState }
       const playerHand = [...updatedGameState.players[0].hand]
       const tileToSwap = playerHand[index]
       
-      // Get a random tile from the pool
-      const poolIndex = Math.floor(Math.random() * updatedGameState.pool.length)
-      const poolTile = updatedGameState.pool[poolIndex]
+      let swappedTile: number
+      let message: string
       
-      // Swap the tiles
-      playerHand[index] = poolTile
-      updatedGameState.pool[poolIndex] = tileToSwap
+      if (gameState.pool.length > 0) {
+        // Swap with pool
+        const poolIndex = Math.floor(Math.random() * updatedGameState.pool.length)
+        swappedTile = updatedGameState.pool[poolIndex]
+        updatedGameState.pool[poolIndex] = tileToSwap
+        message = "You swapped a tile with the Pool."
+      } else if (gameState.players[1].hand.length > 0) {
+        // Swap with CPU
+        const cpuIndex = Math.floor(Math.random() * updatedGameState.players[1].hand.length)
+        swappedTile = updatedGameState.players[1].hand[cpuIndex]
+        updatedGameState.players[1].hand[cpuIndex] = tileToSwap
+        message = "You swapped a tile with CPU!"
+      } else {
+        // No tiles available to swap with
+        updatedGameState.activePowerUp = null
+        updatedGameState.powerUps[0]['swap']++ // Refund the power-up
+        updatedGameState.powerUpUsedThisTurn = false
+        updatedGameState.message = "No tiles available to swap with!"
+        setGameState(updatedGameState)
+        return
+      }
+      
+      playerHand[index] = swappedTile
       updatedGameState.players[0].hand = playerHand
       updatedGameState.activePowerUp = null
-      updatedGameState.stolenTileIndex = index // Highlight the new tile
-      updatedGameState.message = "You swapped a tile. Your turn!"
+      updatedGameState.message = message + " Your turn!"
       
       // Show notification for the swap completion
       setPowerUpNotification({
@@ -271,14 +289,6 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       })
 
       setGameState(updatedGameState)
-
-      // Clear the highlight after the next click
-      const clearHighlight = () => {
-        setGameState(prev => prev ? { ...prev, stolenTileIndex: undefined } : null)
-        document.removeEventListener('click', clearHighlight)
-      }
-      document.addEventListener('click', clearHighlight)
-      
       return
     }
 
@@ -697,11 +707,12 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         break
 
       case 'swap':
-        if (gameState.pool.length === 0) {
+        // If pool is empty and CPU has no tiles, can't swap
+        if (gameState.pool.length === 0 && gameState.players[1].hand.length === 0) {
           updatedGameState.activePowerUp = null
           updatedGameState.powerUps[0][type]++ // Refund the power-up
           updatedGameState.powerUpUsedThisTurn = false // Reset since power-up wasn't actually used
-          updatedGameState.message = "No tiles in the pool to swap with!"
+          updatedGameState.message = "No tiles available to swap with!"
           break
         }
 
@@ -711,15 +722,25 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           const handIndex = gameState.players[0].hand.indexOf(selectedNumber)
           const playerTile = updatedGameState.players[0].hand[handIndex]
           
-          // Get a random tile from the pool
-          const randomIndex = Math.floor(Math.random() * updatedGameState.pool.length)
-          const poolTile = updatedGameState.pool[randomIndex]
+          let swappedTile: number
+          let message: string
           
-          // Swap the tiles
-          updatedGameState.pool[randomIndex] = playerTile
-          updatedGameState.players[0].hand[handIndex] = poolTile
+          if (gameState.pool.length > 0) {
+            // Swap with pool
+            const randomIndex = Math.floor(Math.random() * updatedGameState.pool.length)
+            swappedTile = updatedGameState.pool[randomIndex]
+            updatedGameState.pool[randomIndex] = playerTile
+            message = "You swapped a tile with the Pool."
+          } else {
+            // Swap with CPU
+            const cpuIndex = Math.floor(Math.random() * updatedGameState.players[1].hand.length)
+            swappedTile = updatedGameState.players[1].hand[cpuIndex]
+            updatedGameState.players[1].hand[cpuIndex] = playerTile
+            message = "You swapped a tile with CPU!"
+          }
           
-          updatedGameState.message = "You swapped a tile. Your turn!"
+          updatedGameState.players[0].hand[handIndex] = swappedTile
+          updatedGameState.message = message + " Your turn!"
           updatedGameState.activePowerUp = null
           
           // Highlight the new tile
@@ -736,7 +757,9 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
             action: 'swap',
             player: 'player'
           })
-          updatedGameState.message = "Select a tile from YOUR HAND to swap with the Pool."
+          updatedGameState.message = gameState.pool.length > 0 
+            ? "Select a tile from YOUR HAND to swap with the Pool."
+            : "Select a tile from YOUR HAND to swap with CPU."
         }
         break
 
