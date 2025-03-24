@@ -298,10 +298,16 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     }, 1500)
 
     return () => clearTimeout(timeoutId)
-  }, [gameState?.currentPlayer]) // Only trigger when currentPlayer changes to 1
+  }, [gameState?.currentPlayer, gameState?.isBonusActive, gameState?.board]) // Also trigger when board changes
 
   const computerMove = () => {
     if (!gameState) return
+
+    // If computer has no tiles and pool is empty, end its turn
+    if (gameState.players[1].hand.length === 0 && gameState.pool.length === 0) {
+      drawTilesAndSwitchTurn()
+      return
+    }
 
     // Find valid moves
     const validMoves: Array<{ row: number; col: number; number: number; index: number }> = []
@@ -387,7 +393,7 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       let scoreChange = isValid ? move.number : (gameState.isBonusActive ? 0 : -10)
       let message = isValid
         ? `Computer placed ${move.number} correctly! +${move.number} points.`
-        : `Computer made an invalid placement! -10 points.`
+        : `Computer made an invalid placement! ${gameState.isBonusActive ? "No penalty during bonus period." : "-10 points."}`
 
       const newPool = [...gameState.pool]
       const updatedPlayers = [...gameState.players]
@@ -1039,7 +1045,8 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
                       ...prev,
                       isBonusActive: false,
                       bonusEndTime: undefined,
-                      message: "⭐ Bonus period ended! Back to normal turns."
+                      currentPlayer: 0, // Switch back to player's turn
+                      message: "⭐ Bonus period ended! Your turn."
                     } : null)
                     // Show floating message for bonus end
                     const boardRect = boardRef.current?.getBoundingClientRect()
