@@ -1,7 +1,10 @@
 "use client"
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
+import { usePlayerProfile } from '@/contexts/player-profile-context'
+import { PlayerProfile } from '@/types/player-profile'
+import PrizeSlider from './prize-slider'
 
 type VictoryCelebrationProps = {
   isVisible: boolean
@@ -10,10 +13,19 @@ type VictoryCelebrationProps = {
   onPlayAgain: () => void
 }
 
+type PowerUpType = 'peek' | 'swap' | 'steal' | 'skip'
+
 export default function VictoryCelebration({ isVisible, score, onClose, onPlayAgain }: VictoryCelebrationProps) {
+  const [showPrizeSlider, setShowPrizeSlider] = useState(false)
+  const [hasClaimed, setHasClaimed] = useState(false)
+  const { addPowerup, addExperience } = usePlayerProfile()
+
   useEffect(() => {
     if (!isVisible) return
 
+    // Reset state when victory celebration becomes visible
+    setHasClaimed(false)
+    
     // Fire confetti from the left
     confetti({
       particleCount: 100,
@@ -36,7 +48,38 @@ export default function VictoryCelebration({ isVisible, score, onClose, onPlayAg
       origin: { x: 0.5, y: 0.6 },
       colors
     })
+
+    // Show prize slider after a short delay
+    setTimeout(() => {
+      setShowPrizeSlider(true)
+    }, 1000)
   }, [isVisible])
+
+  const handlePrizeSelected = (prize: string) => {
+    const prizeType = prize.toLowerCase()
+    
+    if (prizeType === 'xp') {
+      // Add 25 XP to the player's profile
+      addExperience(25)
+    } else {
+      // Handle power-up prizes
+      const powerUpType = prizeType as PowerUpType
+      if (['peek', 'swap', 'steal', 'skip'].includes(powerUpType)) {
+        addPowerup(powerUpType, 1)
+      }
+    }
+    
+    setHasClaimed(true)
+    setShowPrizeSlider(false)
+  }
+
+  const handleClose = () => {
+    if (!hasClaimed) {
+      setShowPrizeSlider(true)
+      return
+    }
+    onClose()
+  }
 
   if (!isVisible) return null
 
@@ -44,7 +87,7 @@ export default function VictoryCelebration({ isVisible, score, onClose, onPlayAg
     <div className="fixed inset-0 flex items-center justify-center z-50">
       <div className="bg-[#4B3418]/90 p-6 rounded-xl shadow-2xl border-4 border-[#F5BC41] animate-bounce-fade relative">
         <button 
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-1 right-1 text-[#F5BC41] hover:text-[#F9EED7] transition-colors text-xs leading-none w-4 h-4 flex items-center justify-center rounded-full border-[1.5px] border-[#F5BC41] hover:bg-[#F5BC41]"
         >
           ×
@@ -64,6 +107,12 @@ export default function VictoryCelebration({ isVisible, score, onClose, onPlayAg
           </button>
         </div>
       </div>
+
+      <PrizeSlider 
+        isVisible={showPrizeSlider} 
+        onClose={() => setShowPrizeSlider(false)}
+        onPrizeSelected={handlePrizeSelected}
+      />
     </div>
   )
 } 
