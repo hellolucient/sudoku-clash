@@ -112,7 +112,7 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
           <div className="absolute w-1 h-[120px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
           
           <div 
-            className="flex transition-transform pt-[8px] pb-[20px]"
+            className="flex transition-transform pt-[5px] pb-[15px]"
             style={{ 
               transform: `translateX(-${position}px)`,
               transitionDuration: animationDuration,
