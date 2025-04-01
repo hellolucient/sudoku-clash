@@ -107,12 +107,12 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
           🎉 Spin to Win! 🎉
         </h2>
 
-        <div className="w-[300px] h-[120px] overflow-hidden border-4 border-[#222] rounded-lg mx-auto relative">
+        <div className="w-[300px] h-[140px] overflow-hidden border-4 border-[#222] rounded-lg mx-auto relative">
           {/* Center marker line */}
-          <div className="absolute w-1 h-[120px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
+          <div className="absolute w-1 h-[140px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
           
           <div 
-            className="flex transition-transform"
+            className="flex transition-transform pt-[8px] pb-[20px]"
             style={{ 
               transform: `translateX(-${position}px)`,
               transitionDuration: animationDuration,
@@ -125,7 +125,7 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
               prizes.map((prize, index) => (
                 <div 
                   key={`set${setIndex}-${index}`}
-                  className="flex-shrink-0 w-[100px] m-[10px] p-[10px] bg-white rounded-lg text-center shadow-sm text-lg"
+                  className="flex-shrink-0 w-[100px] h-[100px] m-[10px] flex items-center justify-center bg-white rounded-lg text-center shadow-sm text-lg"
                 >
                   {prize.label}
                 </div>
@@ -133,31 +133,7 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
             ))}
           </div>
         </div>
-
-        <div className="mt-6 flex flex-col items-center gap-4">
-          {!selectedPrize ? (
-            <button
-              onClick={startSlide}
-              disabled={isSliding || hasSpun}
-              className="px-5 py-2 bg-[#4A2F1F] text-white rounded-lg cursor-pointer text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#6B4D28] transition-colors"
-            >
-              {isSliding ? 'Spinning...' : hasSpun ? 'Already Spun' : 'Spin'}
-            </button>
-          ) : (
-            <>
-              <div className="text-center font-bold text-[#4A2F1F]">
-                You won: {prizes.find(p => p.type === selectedPrize)?.label}! 🎉
-              </div>
-              <button
-                onClick={handleClaim}
-                className="px-5 py-2 bg-[#4CAF50] text-white rounded-lg cursor-pointer text-base hover:bg-[#45a049] transition-colors"
-              >
-                Claim Prize
-              </button>
-            </>
-          )}
-        </div>
       </div>
     </div>
   )
-} 
+}
