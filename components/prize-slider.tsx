@@ -133,6 +133,30 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
             ))}
           </div>
         </div>
+
+        <div className="mt-6 flex flex-col items-center gap-4">
+          {!selectedPrize ? (
+            <button
+              onClick={startSlide}
+              disabled={isSliding || hasSpun}
+              className="px-5 py-2 bg-[#4A2F1F] text-white rounded-lg cursor-pointer text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#6B4D28] transition-colors"
+            >
+              {isSliding ? 'Spinning...' : hasSpun ? 'Already Spun' : 'Spin'}
+            </button>
+          ) : (
+            <>
+              <div className="text-center font-bold text-[#4A2F1F]">
+                You won: {prizes.find(p => p.type === selectedPrize)?.label}! 🎉
+              </div>
+              <button
+                onClick={handleClaim}
+                className="px-5 py-2 bg-[#4CAF50] text-white rounded-lg cursor-pointer text-base hover:bg-[#45a049] transition-colors"
+              >
+                Claim Prize
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
