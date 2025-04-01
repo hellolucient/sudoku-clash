@@ -5,6 +5,7 @@ import { usePlayerProfile } from '../contexts/player-profile-context';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { deletePlayerProfile } from '@/lib/player-storage';
 
 type ProfileManagementProps = {
   onStartGame: (difficulty: "easy" | "medium" | "hard") => void;
@@ -124,6 +125,7 @@ const PowerupDisplay: React.FC = () => {
 export default function ProfileManagement({ onStartGame }: ProfileManagementProps) {
   const { profile, isLoading } = usePlayerProfile();
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   if (isLoading) {
     return (
@@ -137,6 +139,11 @@ export default function ProfileManagement({ onStartGame }: ProfileManagementProp
   if (!profile) {
     return <ProfileCreationForm />;
   }
+  
+  const handleReset = () => {
+    deletePlayerProfile();
+    window.location.reload(); // Reload to show profile creation
+  };
   
   // Show profile summary
   return (
@@ -171,7 +178,45 @@ export default function ProfileManagement({ onStartGame }: ProfileManagementProp
         >
           START GAME
         </Button>
+        
+        {/* Reset Profile Section */}
+        <div className="mt-4 pt-4 border-t border-[#8C653C]">
+          <Button
+            onClick={() => setShowResetConfirm(true)}
+            className="w-full bg-[#CC4B37] hover:bg-[#BC3B27] text-white font-bold shadow-lg hover:shadow-xl transition-all border border-[#8C653C]"
+          >
+            Reset Profile
+          </Button>
+        </div>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#F4E6CC] p-6 rounded-xl shadow-2xl max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold text-[#4A2F1F] mb-4 text-center">
+              Reset Profile?
+            </h2>
+            <p className="text-[#4A2F1F] mb-6 text-center">
+              This will delete your current profile and all progress. You will need to create a new profile.
+            </p>
+            <div className="flex gap-4">
+              <Button
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 bg-[#8C653C] hover:bg-[#6B4D28] text-white font-bold"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleReset}
+                className="flex-1 bg-[#CC4B37] hover:bg-[#BC3B27] text-white font-bold"
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
