@@ -107,12 +107,12 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
           🎉 Spin to Win! 🎉
         </h2>
 
-        <div className="w-[300px] h-[120px] overflow-hidden border-4 border-[#222] rounded-lg mx-auto relative">
+        <div className="w-[300px] h-[130px] overflow-hidden border-4 border-[#222] rounded-lg mx-auto relative">
           {/* Center marker line */}
-          <div className="absolute w-1 h-[120px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
+          <div className="absolute w-1 h-[130px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
           
           <div 
-            className="flex transition-transform pt-[5px] pb-[15px]"
+            className="flex transition-transform pt-[2px] pb-[18px]"
             style={{ 
               transform: `translateX(-${position}px)`,
               transitionDuration: animationDuration,
