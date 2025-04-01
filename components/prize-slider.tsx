@@ -95,7 +95,7 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-[#F4E6CC] p-8 rounded-xl shadow-2xl relative">
+      <div className="bg-[#F4E6CC] p-8 rounded-xl shadow-2xl relative min-h-[300px]">
         <button 
           onClick={onClose}
           className="absolute top-2 right-2 text-[#4A2F1F] hover:text-[#6B4D28] transition-colors"
@@ -107,9 +107,9 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
           🎉 Spin to Win! 🎉
         </h2>
 
-        <div className="w-[300px] h-[140px] overflow-hidden border-4 border-[#222] rounded-lg mx-auto relative">
+        <div className="w-[300px] h-[120px] overflow-hidden border-4 border-[#222] rounded-lg mx-auto relative">
           {/* Center marker line */}
-          <div className="absolute w-1 h-[140px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
+          <div className="absolute w-1 h-[120px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
           
           <div 
             className="flex transition-transform pt-[8px] pb-[20px]"
