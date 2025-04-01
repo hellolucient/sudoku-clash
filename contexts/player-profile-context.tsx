@@ -239,7 +239,7 @@ export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ c
     if (!profile) return;
     
     let { level, experience, experienceToNextLevel, powerups } = profile;
-    const newExperience = experience + amount;
+    let newExperience = experience + amount;
     let shouldUpdate = false;
     
     // Check for level ups immediately
@@ -248,7 +248,7 @@ export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ c
       // Level up
       level += 1;
       // Calculate excess XP to carry over
-      experience = newExperience - experienceToNextLevel;
+      newExperience = newExperience - experienceToNextLevel;
       // Set new XP threshold for next level
       experienceToNextLevel = calculateNextLevelXP(level);
       
@@ -266,16 +266,11 @@ export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ c
       setShowLevelUp(true);
     }
     
-    // If no level up occurred, just update the experience
-    if (!shouldUpdate) {
-      experience = newExperience;
-    }
-    
-    // Update the profile with all changes
+    // Update profile with new experience
     setProfile({
       ...profile,
       level,
-      experience,
+      experience: newExperience,
       experienceToNextLevel,
       powerups
     });

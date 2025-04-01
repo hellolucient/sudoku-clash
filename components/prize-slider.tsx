@@ -7,6 +7,7 @@ type PrizeSliderProps = {
   isVisible: boolean
   onClose: () => void
   onPrizeSelected: (prize: string) => void
+  forceXP?: boolean
 }
 
 const prizes = [
@@ -23,7 +24,7 @@ const PRIZES_PER_SET = prizes.length
 const SET_WIDTH = PRIZE_WIDTH * PRIZES_PER_SET
 const VIEWPORT_WIDTH = 300
 
-export default function PrizeSlider({ isVisible, onClose, onPrizeSelected }: PrizeSliderProps) {
+export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, forceXP = false }: PrizeSliderProps) {
   const [isSliding, setIsSliding] = useState(false)
   const [position, setPosition] = useState(0)
   const [selectedPrize, setSelectedPrize] = useState<string | null>(null)
@@ -46,7 +47,7 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected }: Pri
     soundManager.playSound('slide')
     
     // Calculate final stop position within first visible set
-    const stopIndex = Math.floor(Math.random() * PRIZES_PER_SET)
+    const stopIndex = forceXP ? 4 : Math.floor(Math.random() * PRIZES_PER_SET) // XP is at index 4
     
     // Reset position without animation
     setAnimationDuration('0s')

@@ -58,19 +58,23 @@ export default function VictoryCelebration({ isVisible, score, onClose, onPlayAg
   const handlePrizeSelected = (prize: string) => {
     const prizeType = prize.toLowerCase()
     
+    // Set claimed first to prevent multiple claims
+    setHasClaimed(true)
+    
     if (prizeType === 'xp') {
-      // Add 25 XP to the player's profile
-      addExperience(25)
+      // Add XP after state update
+      setTimeout(() => {
+        addExperience(25)
+        setShowPrizeSlider(false)
+      }, 0)
     } else {
       // Handle power-up prizes
       const powerUpType = prizeType as PowerUpType
       if (['peek', 'swap', 'steal', 'skip'].includes(powerUpType)) {
         addPowerup(powerUpType, 1)
+        setShowPrizeSlider(false)
       }
     }
-    
-    setHasClaimed(true)
-    setShowPrizeSlider(false)
   }
 
   const handleClose = () => {
