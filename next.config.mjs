@@ -21,14 +21,6 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/manifest.json',
-        destination: '/manifest',
-      },
-    ]
-  },
 }
 
 mergeConfig(nextConfig, userConfig)
