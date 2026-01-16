@@ -1,30 +1,40 @@
 import { NextResponse } from 'next/server'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+
+const manifest = {
+  name: "Sudoku Clash",
+  short_name: "Sudoku Clash",
+  description: "A competitive twist on the classic Sudoku puzzle",
+  start_url: "/",
+  display: "standalone",
+  display_override: ["standalone", "minimal-ui"],
+  background_color: "#E6D7C3",
+  theme_color: "#F5BC41",
+  orientation: "portrait",
+  scope: "/",
+  icons: [
+    {
+      src: "/placeholder-logo.png",
+      sizes: "192x192",
+      type: "image/png",
+      purpose: "any"
+    },
+    {
+      src: "/placeholder-logo.png",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "any maskable"
+    }
+  ],
+  categories: ["games", "puzzle"],
+  screenshots: []
+}
 
 export async function GET() {
-  try {
-    const manifestPath = join(process.cwd(), 'public', 'manifest.json')
-    const manifestContent = readFileSync(manifestPath, 'utf-8')
-    const manifest = JSON.parse(manifestContent)
-    
-    return new NextResponse(JSON.stringify(manifest), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/manifest+json',
-        'Cache-Control': 'public, max-age=3600',
-      },
-    })
-  } catch (error) {
-    console.error('Error reading manifest.json:', error)
-    return new NextResponse(
-      JSON.stringify({ error: 'Manifest not found' }),
-      { 
-        status: 404,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    )
-  }
+  return new NextResponse(JSON.stringify(manifest), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/manifest+json',
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
 }
