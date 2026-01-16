@@ -13,13 +13,13 @@ const manifest = {
   scope: "/",
   icons: [
     {
-      src: "/placeholder-logo.png",
+      src: "https://sudokuclash.com/placeholder-logo.png",
       sizes: "192x192",
       type: "image/png",
       purpose: "any"
     },
     {
-      src: "/placeholder-logo.png",
+      src: "https://sudokuclash.com/placeholder-logo.png",
       sizes: "512x512",
       type: "image/png",
       purpose: "any maskable"
