@@ -45,5 +45,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/manifest.json',
+  matcher: ['/manifest.json'],
 }
