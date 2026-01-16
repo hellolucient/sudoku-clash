@@ -1,0 +1,15 @@
+{
+  "name": "Sudoku Clash",
+  "short_name": "Sudoku Clash",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E6D7C3",
+  "theme_color": "#F5BC41",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

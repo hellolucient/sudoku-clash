@@ -1,0 +1,14 @@
+{
+  "packageId": "com.sudokuclash.app",
+  "host": "sudokuclash.com",
+  "name": "Sudoku Clash",
+  "launcherName": "Sudoku Clash",
+  "display": "standalone",
+  "themeColor": "#F5BC41",
+  "backgroundColor": "#E6D7C3",
+  "startUrl": "/",
+  "orientation": "portrait",
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "minSdkVersion": 21
+}

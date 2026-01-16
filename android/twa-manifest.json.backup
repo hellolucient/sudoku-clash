@@ -1,0 +1,40 @@
+{
+  "packageId": "com.sudokuclash.app",
+  "host": "sudokuclash.com",
+  "name": "Sudoku Clash",
+  "launcherName": "Sudoku Clash",
+  "display": "standalone",
+  "themeColor": "#F5BC41",
+  "themeColorDark": "#4B3418",
+  "navigationColor": "#F5BC41",
+  "navigationColorDark": "#4B3418",
+  "navigationDividerColor": "#8C653C",
+  "navigationDividerColorDark": "#8C653C",
+  "backgroundColor": "#E6D7C3",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://sudokuclash.com/placeholder-logo.png",
+  "maskableIconUrl": "https://sudokuclash.com/placeholder-logo.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    }
+  },
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [
+    {
+      "sha256Fingerprint": "PLACEHOLDER_FINGERPRINT_WILL_BE_ADDED_AFTER_KEYSTORE_CREATION"
+    }
+  ]
+}
