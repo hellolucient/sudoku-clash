@@ -25,3 +25,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# android keystore and releases
+android/android.keystore
+android/keystore.properties
+android/releases/
+android/local.properties
