@@ -6,12 +6,15 @@ export function middleware(request: NextRequest) {
   if (request.nextUrl.pathname === '/manifest.json') {
     const url = request.nextUrl.clone()
     url.pathname = '/api/manifest'
-    return NextResponse.rewrite(url)
+    const response = NextResponse.rewrite(url)
+    // Add headers to prevent caching of 404s
+    response.headers.set('Cache-Control', 'public, max-age=3600')
+    return response
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: '/manifest.json',
+  matcher: ['/manifest.json'],
 }
