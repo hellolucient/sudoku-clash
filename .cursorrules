@@ -1,0 +1,24 @@
+# Cursor Rules for Sudoku Clash
+
+# This file references all cursor rules for the project.
+# All rule files are located in the `.cursor/` directory.
+
+# Core Rules
+# See .cursor/general-rules.md for general coding guidelines
+# See .cursor/typescript-rules.md for TypeScript best practices
+# See .cursor/nextjs-rules.md for Next.js framework rules
+# See .cursor/nodejs-rules.md for Node.js rules
+
+# Solana Integration Rules
+# See .cursor/solana-wallet-rules.md for Solana wallet integration
+# See .cursor/solana-kit-rules.md for Solana Kit integration
+# See .cursor/seeker-integration-rules.md for Solana Seeker dApp store integration
+
+# Deployment Rules
+# See .cursor/twa-deployment-rules.md for Trusted Web Activity deployment
+# See docs/DEPLOYMENT.md for general deployment guidelines
+# See docs/SOLANA_SEEKER.md for Solana Seeker specific deployment
+
+# Project Documentation
+# See GAMEPLAY.md for game rules and mechanics
+# See FUTURE_MECHANICS.md for planned features
