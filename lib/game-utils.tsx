@@ -52,8 +52,38 @@ export const playSound = async (sound: string) => {
 
 // Helper to add floating points
 export const addFloatingPoints = (value: number, x: number, y: number, isBonus?: boolean, message?: string) => {
+  // Adjust X position if too close to edges to prevent cutoff
+  if (typeof window === 'undefined') {
+    // SSR fallback - just use the provided X
+    const event = new CustomEvent("addFloatingPoints", {
+      detail: { value, x, y, isBonus, message }
+    })
+    try {
+      window.dispatchEvent(event)
+    } catch (error) {
+      console.error("Failed to dispatch addFloatingPoints event:", error)
+    }
+    return
+  }
+  
+  const windowWidth = window.innerWidth
+  // Estimate bubble width based on content (longer for bonus messages)
+  const bubbleWidth = message ? 180 : (isBonus ? 100 : 70)
+  const padding = 16 // Padding from edge
+  const minX = padding
+  const maxX = windowWidth - bubbleWidth - padding
+  
+  // If X is too close to right edge, move it inward
+  // If X is too close to left edge, move it inward
+  let adjustedX = x
+  if (x > maxX) {
+    adjustedX = maxX
+  } else if (x < minX) {
+    adjustedX = minX
+  }
+  
   const event = new CustomEvent("addFloatingPoints", {
-    detail: { value, x, y, isBonus, message }
+    detail: { value, x: adjustedX, y, isBonus, message }
   })
   try {
     window.dispatchEvent(event)
