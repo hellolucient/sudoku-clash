@@ -66,7 +66,10 @@ export function generateTone(
 // Global audio context to reuse
 let globalAudioContext: AudioContext | null = null
 
-function getAudioContext(): AudioContext {
+export function getAudioContext(): AudioContext {
+  if (typeof window === 'undefined') {
+    throw new Error("AudioContext not available in SSR")
+  }
   if (!globalAudioContext) {
     globalAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
   }

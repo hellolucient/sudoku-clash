@@ -1,12 +1,30 @@
 "use client"
 
 import type { SoundType } from "@/components/sound-manager"
-import { soundPresets } from "./placeholder-sounds"
+import { soundPresets, getAudioContext } from "./placeholder-sounds"
 
 let isMuted = false
+let isMusicMuted = false
+let backgroundMusicAudio: HTMLAudioElement | null = null
+let isBackgroundMusicPlaying = false
 
 export const setMuted = (muted: boolean) => {
   isMuted = muted
+}
+
+export const setMusicMuted = (muted: boolean) => {
+  isMusicMuted = muted
+  if (muted) {
+    stopBackgroundMusic()
+  } else {
+    // When unmuted, restart music if it was playing before
+    // The component will handle starting it
+    if (backgroundMusicAudio && !isBackgroundMusicPlaying) {
+      startBackgroundMusic().catch(err => {
+        console.error("Failed to restart background music on unmute:", err)
+      })
+    }
+  }
 }
 
 export const playSound = async (sound: string) => {
@@ -100,6 +118,81 @@ export const addFloatingPoints = (value: number, x: number, y: number, isBonus?:
     window.dispatchEvent(event)
   } catch (error) {
     console.error("Failed to dispatch addFloatingPoints event:", error)
+  }
+}
+
+// Background music - using MP3 file
+export const startBackgroundMusic = async () => {
+  console.log("startBackgroundMusic called", { 
+    window: typeof window !== 'undefined',
+    isMusicMuted, 
+    isBackgroundMusicPlaying 
+  })
+  
+  if (typeof window === 'undefined') {
+    console.log("Background music: window undefined")
+    return
+  }
+  if (isMusicMuted) {
+    console.log("Background music: muted")
+    return
+  }
+  if (isBackgroundMusicPlaying) {
+    console.log("Background music: already playing")
+    return
+  }
+  
+  try {
+    // Create or reuse audio element
+    if (!backgroundMusicAudio) {
+      backgroundMusicAudio = new Audio('/sounds/background-music.mp3')
+      backgroundMusicAudio.loop = true
+      backgroundMusicAudio.volume = 0.3 // 30% volume - adjust as needed
+      backgroundMusicAudio.preload = 'auto'
+      
+      // Handle errors
+      backgroundMusicAudio.addEventListener('error', (e) => {
+        console.error("Error loading background music:", e)
+        isBackgroundMusicPlaying = false
+      })
+      
+      // Handle when music ends (shouldn't happen with loop, but just in case)
+      backgroundMusicAudio.addEventListener('ended', () => {
+        console.log("Background music ended")
+        isBackgroundMusicPlaying = false
+      })
+    }
+    
+    // Set flag before playing
+    isBackgroundMusicPlaying = true
+    
+    // Play the music
+    try {
+      await backgroundMusicAudio.play()
+      console.log("Background music started playing")
+    } catch (playError) {
+      console.error("Error playing background music:", playError)
+      // If autoplay is blocked, we'll try again on user interaction
+      isBackgroundMusicPlaying = false
+    }
+  } catch (error) {
+    console.error("Error starting background music:", error)
+    isBackgroundMusicPlaying = false
+  }
+}
+
+export const stopBackgroundMusic = () => {
+  console.log("Stopping background music")
+  isBackgroundMusicPlaying = false
+  
+  if (backgroundMusicAudio) {
+    try {
+      backgroundMusicAudio.pause()
+      backgroundMusicAudio.currentTime = 0
+      console.log("Background music stopped")
+    } catch (e) {
+      console.error("Error stopping background music:", e)
+    }
   }
 }
 

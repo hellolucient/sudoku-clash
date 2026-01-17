@@ -9,7 +9,7 @@ import VictoryCelebration from "./victory-celebration"
 import DefeatMessage from "./defeat-message"
 import { generateSudokuPuzzle } from "@/lib/sudoku-generator"
 import { checkValidPlacement, isRowComplete, isColumnComplete, isBoxComplete } from "@/lib/sudoku-validator"
-import { playSound, addFloatingPoints, setMuted } from "@/lib/game-utils"
+import { playSound, addFloatingPoints, setMuted, setMusicMuted, startBackgroundMusic, stopBackgroundMusic } from "@/lib/game-utils"
 import { usePlayerProfile } from "../contexts/player-profile-context"
 import PowerUpButton from "./power-up-button"
 import PowerUpNotification from "./power-up-notification"
@@ -88,14 +88,39 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
     player: 'player'
   })
   const [isMuted, setIsMuted] = useState(false)
+  const [isMusicMuted, setIsMusicMuted] = useState(false)
 
   // Start game automatically when component mounts
   useEffect(() => {
     startNewGame()
+    // Start background music when game starts (music starts unmuted by default)
+    // Small delay to ensure audio context is ready and user interaction has occurred
+    setTimeout(() => {
+      // Initialize music mute state - start with music enabled
+      setMusicMuted(false)
+      startBackgroundMusic().catch(err => {
+        console.error("Failed to start background music:", err)
+      })
+    }, 100) // Reduced delay from 1000ms to 100ms
+    
+    // Cleanup: stop background music when component unmounts
+    return () => {
+      stopBackgroundMusic()
+    }
   }, [])
 
   // Initialize or reset the game
   const startNewGame = () => {
+    // Restart background music if not muted
+    if (!isMusicMuted) {
+      stopBackgroundMusic() // Stop any existing music
+      setTimeout(() => {
+        startBackgroundMusic().catch(err => {
+          console.error("Failed to restart background music:", err)
+        })
+      }, 100) // Reduced delay from 300ms to 100ms
+    }
+    
     playSound("gameOver") // Reusing game over sound for start game
 
     const { puzzle, solution } = generateSudokuPuzzle(DIFFICULTY_LEVELS[difficulty])
@@ -618,6 +643,9 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
 
   // End the game and determine the winner
   const endGame = (players: Player[]) => {
+    // Stop background music when game ends
+    stopBackgroundMusic()
+    
     const winnerMessage = determineWinner(players)
     const gameEndTime = Date.now()
     const gameStartTime = gameState?.startTime || gameEndTime
@@ -1088,13 +1116,34 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
                   }}
                 />
               )}
-              <MuteButton 
-                isMuted={isMuted} 
-                onToggle={() => {
-                  setIsMuted(!isMuted)
-                  setMuted(!isMuted)
-                }} 
-              />
+              <div className="flex items-center gap-1">
+                <MuteButton 
+                  type="sound"
+                  isMuted={isMuted} 
+                  onToggle={() => {
+                    const newMutedState = !isMuted
+                    setIsMuted(newMutedState)
+                    setMuted(newMutedState)
+                  }} 
+                />
+                <MuteButton 
+                  type="music"
+                  isMuted={isMusicMuted} 
+                  onToggle={() => {
+                    const newMusicMutedState = !isMusicMuted
+                    setIsMusicMuted(newMusicMutedState)
+                    setMusicMuted(newMusicMutedState)
+                    // Immediately start/stop based on new state
+                    if (newMusicMutedState) {
+                      stopBackgroundMusic()
+                    } else {
+                      startBackgroundMusic().catch(err => {
+                        console.error("Failed to start background music:", err)
+                      })
+                    }
+                  }} 
+                />
+              </div>
             </div>
             <div className="text-xs font-bold text-white">
               <span className="text-[#FF6B6B]">CPU:</span> {gameState.players[1].score}
