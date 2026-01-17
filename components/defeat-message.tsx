@@ -18,23 +18,23 @@ export default function DefeatMessage({ isVisible, score, onClose, onPlayAgain }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-[#4B3418]/90 p-6 rounded-xl shadow-2xl border-4 border-[#CC4B37] animate-fade-in relative">
+      <div className="bg-[#1a1a2e] p-4 rounded-lg shadow-2xl border-2 border-[#FF6B6B] relative max-w-sm w-full mx-4">
         <button 
           onClick={onClose}
-          className="absolute top-1 right-1 text-[#CC4B37] hover:text-[#F9EED7] transition-colors text-xs leading-none w-4 h-4 flex items-center justify-center rounded-full border-[1.5px] border-[#CC4B37] hover:bg-[#CC4B37]"
+          className="absolute top-2 right-2 text-[#FF6B6B] hover:text-white transition-colors text-lg leading-none w-6 h-6 flex items-center justify-center rounded-full border border-[#FF6B6B]/50 hover:bg-[#FF6B6B]/20"
         >
           ×
         </button>
-        <h2 className="text-4xl font-bold text-[#F9EED7] mb-2 text-center opacity-80">
+        <h2 className="text-2xl font-bold text-white mb-2 text-center opacity-90">
           You Lost
         </h2>
-        <p className="text-2xl text-[#CC4B37] font-bold text-center mb-4">
+        <p className="text-xl text-[#FF6B6B] font-bold text-center mb-4">
           Score: {score}
         </p>
         <div className="flex justify-center">
           <button
             onClick={onPlayAgain}
-            className="bg-gradient-to-r from-[#CC4B37] to-[#8C3527] hover:from-[#BC3B27] hover:to-[#7C2517] text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            className="bg-gradient-to-r from-[#9945FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all text-sm"
           >
             Play Again
           </button>

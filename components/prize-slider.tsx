@@ -18,11 +18,11 @@ const prizes = [
   { type: 'xp', label: '⭐ 25 XP' }
 ]
 
-// Each prize box is 120px total (100px + 20px margins)
-const PRIZE_WIDTH = 120
+// Each prize box is 96px total (80px + 16px margins)
+const PRIZE_WIDTH = 96
 const PRIZES_PER_SET = prizes.length
 const SET_WIDTH = PRIZE_WIDTH * PRIZES_PER_SET
-const VIEWPORT_WIDTH = 300
+const VIEWPORT_WIDTH = 240
 
 export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, forceXP = false }: PrizeSliderProps) {
   const [isSliding, setIsSliding] = useState(false)
@@ -66,14 +66,18 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
         setAnimationTiming('cubic-bezier(0.33, 1, 0.68, 1)')
         
         // Calculate final position to center the selected prize
-        // We want the prize to land in the center of the viewport (150px)
-        // Each prize is 120px wide, so we need to adjust the position accordingly
+        // Center of viewport is at VIEWPORT_WIDTH / 2 = 120px
+        // We need to position the prize so its center aligns with the viewport center
+        // The left edge of the prize should be at: (VIEWPORT_WIDTH - PRIZE_WIDTH) / 2
         const centerOffset = (VIEWPORT_WIDTH - PRIZE_WIDTH) / 2
+        // Position the slider so the selected prize's left edge is at centerOffset
+        // Starting from set 10, move to the selected prize and adjust for centering
         const finalPosition = (SET_WIDTH * 10) + (stopIndex * PRIZE_WIDTH) - centerOffset
 
         setPosition(finalPosition)
 
-        // After final slowdown, show prize
+        // After final slowdown, set the selected prize based on stopIndex
+        // We use stopIndex directly since that's what we calculated to be at the center
         setTimeout(() => {
           const prize = prizes[stopIndex]
           setSelectedPrize(prize.type)
@@ -95,21 +99,21 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-[#F4E6CC] p-8 rounded-xl shadow-2xl relative min-h-[300px]">
+      <div className="bg-[#1a1a2e] p-4 rounded-lg shadow-2xl relative border-2 border-[#14F195] max-w-sm w-full mx-4">
         <button 
           onClick={onClose}
-          className="absolute top-2 right-2 text-[#4A2F1F] hover:text-[#6B4D28] transition-colors"
+          className="absolute top-2 right-2 text-[#14F195] hover:text-white transition-colors text-lg leading-none w-6 h-6 flex items-center justify-center rounded-full border border-[#14F195]/50 hover:bg-[#14F195]/20"
         >
           ×
         </button>
         
-        <h2 className="text-2xl font-bold text-[#4A2F1F] mb-6 text-center">
+        <h2 className="text-xl font-bold text-white mb-4 text-center">
           🎉 Spin to Win! 🎉
         </h2>
 
-        <div className="w-[300px] h-[130px] overflow-hidden border-4 border-[#222] rounded-lg mx-auto relative">
+        <div className="w-[240px] h-[100px] overflow-hidden border-2 border-[#14F195]/50 rounded-lg mx-auto relative">
           {/* Center marker line */}
-          <div className="absolute w-1 h-[130px] bg-black top-0 left-1/2 -translate-x-1/2 z-10" />
+          <div className="absolute w-1 h-[100px] bg-[#14F195] top-0 left-1/2 -translate-x-1/2 z-10" />
           
           <div 
             className="flex transition-transform pt-[2px] pb-[18px]"
@@ -125,7 +129,7 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
               prizes.map((prize, index) => (
                 <div 
                   key={`set${setIndex}-${index}`}
-                  className="flex-shrink-0 w-[100px] h-[100px] m-[10px] flex items-center justify-center bg-white rounded-lg text-center shadow-sm text-lg"
+                  className="flex-shrink-0 w-[80px] h-[80px] m-[8px] flex items-center justify-center bg-[#0D1117] border border-[#14F195]/30 rounded-lg text-center text-sm text-white"
                 >
                   {prize.label}
                 </div>
@@ -134,23 +138,23 @@ export default function PrizeSlider({ isVisible, onClose, onPrizeSelected, force
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col items-center gap-4">
+        <div className="mt-4 flex flex-col items-center gap-3">
           {!selectedPrize ? (
             <button
               onClick={startSlide}
               disabled={isSliding || hasSpun}
-              className="px-5 py-2 bg-[#4A2F1F] text-white rounded-lg cursor-pointer text-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#6B4D28] transition-colors"
+              className="px-4 py-1.5 bg-gradient-to-r from-[#9945FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white rounded-lg cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSliding ? 'Spinning...' : hasSpun ? 'Already Spun' : 'Spin'}
             </button>
           ) : (
             <>
-              <div className="text-center font-bold text-[#4A2F1F]">
+              <div className="text-center font-bold text-[#14F195] text-sm">
                 You won: {prizes.find(p => p.type === selectedPrize)?.label}! 🎉
               </div>
               <button
                 onClick={handleClaim}
-                className="px-5 py-2 bg-[#4CAF50] text-white rounded-lg cursor-pointer text-base hover:bg-[#45a049] transition-colors"
+                className="px-4 py-1.5 bg-gradient-to-r from-[#14F195] to-[#00D4AA] hover:from-[#12E085] hover:to-[#00C49A] text-[#0D1117] rounded-lg cursor-pointer text-sm transition-colors font-bold"
               >
                 Claim Prize
               </button>

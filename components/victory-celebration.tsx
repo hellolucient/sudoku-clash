@@ -41,7 +41,7 @@ export default function VictoryCelebration({ isVisible, score, onClose, onPlayAg
     })
 
     // Fire confetti bursts in the center
-    const colors = ['#F5BC41', '#CC4B37', '#F9EED7']
+    const colors = ['#9945FF', '#14F195', '#F5BC41']
     confetti({
       particleCount: 150,
       spread: 100,
@@ -88,23 +88,23 @@ export default function VictoryCelebration({ isVisible, score, onClose, onPlayAg
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-[#4B3418]/90 p-6 rounded-xl shadow-2xl border-4 border-[#F5BC41] animate-bounce-fade relative">
+      <div className="bg-[#1a1a2e] p-4 rounded-lg shadow-2xl border-2 border-[#14F195] relative max-w-sm w-full mx-4">
         <button 
           onClick={handleClose}
-          className="absolute top-1 right-1 text-[#F5BC41] hover:text-[#F9EED7] transition-colors text-xs leading-none w-4 h-4 flex items-center justify-center rounded-full border-[1.5px] border-[#F5BC41] hover:bg-[#F5BC41]"
+          className="absolute top-2 right-2 text-[#14F195] hover:text-white transition-colors text-lg leading-none w-6 h-6 flex items-center justify-center rounded-full border border-[#14F195]/50 hover:bg-[#14F195]/20"
         >
           ×
         </button>
-        <h2 className="text-4xl font-bold text-[#F9EED7] mb-2 text-center">
+        <h2 className="text-2xl font-bold text-white mb-2 text-center">
           Victory!
         </h2>
-        <p className="text-2xl text-[#F5BC41] font-bold text-center mb-4">
+        <p className="text-xl text-[#14F195] font-bold text-center mb-4">
           Score: {score}
         </p>
         <div className="flex justify-center">
           <button
             onClick={onPlayAgain}
-            className="bg-gradient-to-r from-[#F5BC41] to-[#CC7A4D] hover:from-[#E5AC31] hover:to-[#BC6A3D] text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            className="bg-gradient-to-r from-[#9945FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all text-sm"
           >
             Play Again
           </button>
