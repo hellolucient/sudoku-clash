@@ -9,7 +9,7 @@ import { playSound } from '@/lib/game-utils';
 interface PlayerProfileContextType {
   profile: PlayerProfile | null;
   isLoading: boolean;
-  createProfile: (name: string) => void;
+  createProfile: (name: string, walletPublicKey?: string) => void;
   updateProfile: (updates: Partial<PlayerProfile>) => void;
   updateStats: (gameResult: GameResult) => void;
   addExperience: (amount: number) => void;
@@ -60,8 +60,8 @@ export const PlayerProfileProvider: React.FC<{children: React.ReactNode}> = ({ c
     }
   }, [profile]);
 
-  const createProfile = (name: string) => {
-    const newProfile = createNewProfile(name);
+  const createProfile = (name: string, walletPublicKey?: string) => {
+    const newProfile = createNewProfile(name, walletPublicKey);
     setProfile(newProfile);
   };
 

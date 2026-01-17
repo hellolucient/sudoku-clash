@@ -7,6 +7,7 @@ export type PlayerProfile = {
   // Basic info
   id: string;                // Unique identifier for the player
   name: string;              // Player's chosen name
+  walletPublicKey?: string;  // Optional: Solana wallet public key if signed in with wallet
   createdAt: Date;           // When the profile was created
   lastPlayedAt: Date;        // Last time they played
   

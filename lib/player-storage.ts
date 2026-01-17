@@ -76,12 +76,13 @@ export const loadPlayerProfile = (): PlayerProfile | null => {
 /**
  * Create a new player profile with default values
  */
-export const createNewProfile = (name: string): PlayerProfile => {
+export const createNewProfile = (name: string, walletPublicKey?: string): PlayerProfile => {
   const now = new Date();
   
   return {
     id: generateUniqueId(),
     name,
+    walletPublicKey,
     createdAt: now,
     lastPlayedAt: now,
     stats: {
