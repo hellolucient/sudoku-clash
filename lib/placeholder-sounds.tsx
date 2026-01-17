@@ -63,14 +63,29 @@ export function generateTone(
   })
 }
 
+// Global audio context to reuse
+let globalAudioContext: AudioContext | null = null
+
+function getAudioContext(): AudioContext {
+  if (!globalAudioContext) {
+    globalAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+  }
+  return globalAudioContext
+}
+
 // Play a generated tone
 export async function playTone(frequency = 440, duration = 0.2, volume = 0.1, type: OscillatorType = "sine"): Promise<void> {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const audioContext = getAudioContext()
     
-    // Ensure audio context is resumed
+    // Ensure audio context is resumed (critical for mobile)
     if (audioContext.state === 'suspended') {
-      await audioContext.resume()
+      try {
+        await audioContext.resume()
+      } catch (e) {
+        // If resume fails, try creating a new context
+        globalAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      }
     }
 
     const oscillator = audioContext.createOscillator()

@@ -11,6 +11,7 @@ export const setMuted = (muted: boolean) => {
 
 export const playSound = async (sound: string) => {
   if (isMuted) return
+  if (typeof window === 'undefined') return
 
   try {
     // Use the sound presets
@@ -51,7 +52,17 @@ export const playSound = async (sound: string) => {
 }
 
 // Helper to add floating points
-export const addFloatingPoints = (value: number, x: number, y: number, isBonus?: boolean, message?: string) => {
+export const addFloatingPoints = (value: number, x: number, y: number, isBonus?: boolean, message?: string, playSoundForBubble?: boolean) => {
+  // Play sound for this floating point bubble if requested
+  if (playSoundForBubble && !isMuted) {
+    if (isBonus || value >= 25) {
+      // Play bonus sound for bonus points
+      playSound("bonus").catch(err => console.error("Error playing bonus sound:", err))
+    } else if (value > 0) {
+      // Play a light sound for regular points
+      playSound("select").catch(err => console.error("Error playing select sound:", err))
+    }
+  }
   // Adjust X position if too close to edges to prevent cutoff
   if (typeof window === 'undefined') {
     // SSR fallback - just use the provided X

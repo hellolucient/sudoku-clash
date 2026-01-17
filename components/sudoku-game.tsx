@@ -413,8 +413,8 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         // Play sound
         playSound("place")
 
-        // Show floating points
-        addFloatingPoints(move.number, pointX, pointY)
+        // Show floating points (no sound for regular placement, sound already played)
+        addFloatingPoints(move.number, pointX, pointY, false, undefined, false)
 
         // Update the board permanently for valid moves
         newBoard[move.row][move.col] = move.number
@@ -428,11 +428,10 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           message += " Row complete! +25 bonus points."
           newCompletedSections.push({ type: "row", index: move.row })
 
-          // Play bonus sound and show floating points
-          setTimeout(() => {
-            playSound("bonus")
-            addFloatingPoints(25, pointX, pointY - 20, true)
-          }, 300)
+        // Show floating points with sound
+        setTimeout(() => {
+          addFloatingPoints(25, pointX, pointY - 20, true, undefined, true)
+        }, 300)
         }
 
         // Check column completion
@@ -441,10 +440,9 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           message += " Column complete! +25 bonus points."
           newCompletedSections.push({ type: "column", index: move.col })
 
-          // Play bonus sound and show floating points with slight delay
+          // Show floating points with sound
           setTimeout(() => {
-            playSound("bonus")
-            addFloatingPoints(25, pointX + 20, pointY - 20, true)
+            addFloatingPoints(25, pointX + 20, pointY - 20, true, undefined, true)
           }, 600)
         }
 
@@ -456,10 +454,10 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           message += " Box complete! +50 bonus points."
           newCompletedSections.push({ type: "box", index: boxRow * 3 + boxCol, boxRow, boxCol })
 
-          // Play bonus sound and show floating points with slight delay
+          // Show floating points with sound (use complete sound for box completion)
           setTimeout(() => {
-            playSound("complete")
-            addFloatingPoints(50, pointX - 20, pointY - 20, true)
+            playSound("complete").catch(() => {})
+            addFloatingPoints(50, pointX - 20, pointY - 20, true, undefined, false) // Don't play bonus sound, we already played complete
           }, 900)
         }
 
@@ -490,14 +488,15 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
           message = "⭐ Computer activated star bonus! Unlimited turns for 20 seconds! ⭐"
           playSound("bonus")
           // Show floating bonus message
-          addFloatingPoints(0, pointX, pointY - 40, true, "⭐ CPU BONUS ACTIVATED! ⭐")
+          playSound("bonus").catch(() => {})
+          addFloatingPoints(0, pointX, pointY - 40, true, "⭐ CPU BONUS ACTIVATED! ⭐", false)
         }
       } else {
         // Play invalid sound
         playSound("invalid")
 
-        // Show floating points for penalty - show 0 during bonus period
-        addFloatingPoints(gameState.isBonusActive ? 0 : -10, pointX, pointY)
+        // Show floating points for penalty - show 0 during bonus period (no sound, invalid already played)
+        addFloatingPoints(gameState.isBonusActive ? 0 : -10, pointX, pointY, false, undefined, false)
 
         // For invalid moves, show animation but don't update board
         setInvalidCell([move.row, move.col, move.number])
@@ -876,8 +875,8 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
       // Play sound
       playSound("place")
 
-      // Show floating points
-      addFloatingPoints(number, pointX, pointY)
+      // Show floating points (no sound for regular placement, sound already played)
+      addFloatingPoints(number, pointX, pointY, false, undefined, false)
 
       // Update the board permanently for valid moves
       newBoard[row][col] = number
@@ -891,10 +890,9 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         message += " Row complete! +25 bonus points."
         newCompletedSections.push({ type: "row", index: row })
 
-        // Play bonus sound and show floating points
+        // Show floating points with sound
         setTimeout(() => {
-          playSound("bonus")
-          addFloatingPoints(25, pointX, pointY - 20, true)
+          addFloatingPoints(25, pointX, pointY - 20, true, undefined, true)
         }, 300)
       }
 
@@ -904,10 +902,9 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         message += " Column complete! +25 bonus points."
         newCompletedSections.push({ type: "column", index: col })
 
-        // Play bonus sound and show floating points with slight delay
+        // Show floating points with sound
         setTimeout(() => {
-          playSound("bonus")
-          addFloatingPoints(25, pointX + 20, pointY - 20, true)
+          addFloatingPoints(25, pointX + 20, pointY - 20, true, undefined, true)
         }, 600)
       }
 
@@ -919,10 +916,10 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         message += " Box complete! +50 bonus points."
         newCompletedSections.push({ type: "box", index: boxRow * 3 + boxCol, boxRow, boxCol })
 
-        // Play bonus sound and show floating points with slight delay
+        // Show floating points with sound (use complete sound for box completion)
         setTimeout(() => {
-          playSound("complete")
-          addFloatingPoints(50, pointX - 20, pointY - 20, true)
+          playSound("complete").catch(() => {})
+          addFloatingPoints(50, pointX - 20, pointY - 20, true, undefined, false) // Don't play bonus sound, we already played complete
         }, 900)
       }
 
@@ -953,14 +950,15 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
         message = "⭐ Star bonus activated! Unlimited turns for 20 seconds! ⭐"
         playSound("bonus")
         // Show floating bonus message
-        addFloatingPoints(0, pointX, pointY - 40, true, "⭐ BONUS ACTIVATED! ⭐")
+        playSound("bonus").catch(() => {})
+        addFloatingPoints(0, pointX, pointY - 40, true, "⭐ BONUS ACTIVATED! ⭐", false)
       }
     } else {
       // Play invalid sound
       playSound("invalid")
 
-      // Show floating points for penalty - show 0 during bonus period
-      addFloatingPoints(gameState.isBonusActive ? 0 : -10, pointX, pointY)
+      // Show floating points for penalty - show 0 during bonus period (no sound, invalid already played)
+      addFloatingPoints(gameState.isBonusActive ? 0 : -10, pointX, pointY, false, undefined, false)
 
       // For invalid moves, show animation but don't update board
       setInvalidCell([row, col, number])
