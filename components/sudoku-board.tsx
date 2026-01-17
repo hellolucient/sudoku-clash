@@ -82,10 +82,10 @@ export default function SudokuBoard({
     })
   }
 
-  // Update the getCellStyle function to use our new wooden style
+  // Update the getCellStyle function to use Solana style
   const getCellStyle = (row: number, col: number) => {
     // Return just the base style, we'll handle highlighting separately
-    return board[row][col] !== null ? "number-tile" : "bg-[#F9EED7] hover:bg-[#F5DFB3]"
+    return board[row][col] !== null ? "number-tile" : "bg-[#1a1a2e] hover:bg-[#252547] border border-[#14F195]/20"
   }
 
   const getCellContent = (row: number, col: number) => {
@@ -142,16 +142,18 @@ export default function SudokuBoard({
                 key={`${row}-${col}`}
                 data-cell={`${row}-${col}`}
                 className={cn(
-                  "aspect-square flex items-center justify-center text-sm md:text-lg font-bold",
-                  "transition-all duration-200 relative border border-[#D2B48C]",
+                  "aspect-square flex items-center justify-center",
+                  "transition-all duration-200 relative",
+                  "border border-[#14F195]/10",
+                  "touch-manipulation",
                   getCellStyle(row, col),
                   // Cell state styling
                   isSelectedCell(row, col) &&
-                    "ring-2 ring-[#F5BC41] z-10",
+                    "ring-2 ring-[#14F195] z-10",
                   isComputer &&
-                    "z-20 bg-[#F37B60]/30",
-                  isInvalid && "ring-2 ring-red-500 z-10",
-                  isCompleted && "animate-completed-cell",
+                    "z-20 bg-[#FF6B6B]/30",
+                  isInvalid && "z-10",
+                  isCompleted && "animate-completed-flash",
                   !gameOver &&
                     currentPlayer === 0 &&
                     "cursor-pointer"
@@ -160,31 +162,39 @@ export default function SudokuBoard({
               >
                 {/* Add an overlay div for highlighting same numbers */}
                 {isSameNum && (
-                  <div className="absolute inset-0 bg-[#F5BC41]/70 z-5" />
+                  <div className="absolute inset-0 bg-[#14F195]/60 border-2 border-[#14F195] z-5 rounded-lg" />
                 )}
                 
-                {/* Cell content */}
-                <div className="relative z-10">
-                  {getCellContent(row, col)}
-                </div>
+                {/* Cell content - large numbers for tiles */}
+                {board[row][col] !== null ? (
+                  <div className={`relative z-10 text-base md:text-lg font-bold ${isSameNum ? 'text-[#0D1117]' : 'text-white'}`}>
+                    {getCellContent(row, col)}
+                  </div>
+                ) : (
+                  <div className="relative z-10 text-xs text-[#14F195]/60">
+                    {getCellContent(row, col)}
+                  </div>
+                )}
 
                 {/* Star cell */}
                 {isStarCell && !board[row][col] && (
                   <div className="absolute inset-0 flex items-center justify-center z-20">
-                    <span className="text-2xl md:text-3xl animate-pulse">⭐</span>
+                    <span className="text-xl md:text-2xl animate-pulse">⭐</span>
                   </div>
                 )}
 
                 {/* Localized flash animation for invalid cells */}
                 {isInvalid && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-sm md:text-lg font-bold animate-flash-number">{getInvalidCellValue()}</div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#FF6B6B]/80 rounded-lg z-30">
+                    <div className="text-lg md:text-xl font-bold text-white animate-flash-number drop-shadow-lg">
+                      {getInvalidCellValue()}
+                    </div>
                   </div>
                 )}
                 
                 {/* Computer selection pulse animation */}
                 {isComputer && (
-                  <div className="absolute inset-0 bg-[#F37B60]/30 animate-computer-pulse rounded"></div>
+                  <div className="absolute inset-0 bg-[#FF6B6B]/30 animate-computer-pulse rounded"></div>
                 )}
               </div>
             );
@@ -194,7 +204,7 @@ export default function SudokuBoard({
         boxes.push(
           <div 
             key={`box-${boxRow}-${boxCol}`} 
-            className="grid grid-cols-3 grid-rows-3 relative overflow-hidden rounded-sm box-glow border-2 border-[#8B4513]"
+            className="grid grid-cols-3 grid-rows-3 relative border border-[#14F195]/50"
           >
             {cells}
           </div>
@@ -207,7 +217,7 @@ export default function SudokuBoard({
 
   // Update the return statement with a better grid structure
   return (
-    <div className="grid grid-cols-3 grid-rows-3 gap-1 bg-[#8B4513] p-1 rounded-lg shadow-lg">
+    <div className="grid grid-cols-3 grid-rows-3 gap-0.5 bg-[#0D1117] p-0.5 rounded-lg border-2 border-[#14F195]/30 w-full">
       {renderBoxes()}
     </div>
   )

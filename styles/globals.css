@@ -97,5 +97,158 @@ body {
   body {
     @apply bg-background text-foreground;
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='none'/%3E%3Cpath d='M0 0h1v99h99v1H0z' fill='rgba(120, 80, 40, 0.1)'/%3E%3Cpath d='M0 0h100v25H75v25H50v25H25v25H0z' stroke='rgba(120, 80, 40, 0.05)' fill='none' stroke-width='1' /%3E%3C/svg%3E");
+    /* Mobile optimizations */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent text selection on interactive elements for better mobile UX */
+  button, 
+  [role="button"],
+  .cursor-pointer {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Safe area support for notched devices */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+}
+
+@layer components {
+  .number-tile {
+    @apply relative;
+    @apply overflow-hidden;
+    @apply rounded-lg;
+    @apply text-white;
+    @apply font-bold;
+    background: linear-gradient(135deg, #9945FF 0%, #7C3AED 50%, #6D28D9 100%);
+    border: 2px solid #14F195;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 2px 4px -1px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+      0 0 8px rgba(153, 69, 255, 0.4);
+    position: relative;
+  }
+  
+  .number-tile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    border-radius: 8px 8px 0 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .number-tile::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    height: 30%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, transparent 100%);
+    border-radius: 6px 6px 0 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  
+  .number-tile > * {
+    @apply relative z-10;
+    color: #FFFFFF;
+    font-weight: 900;
+  }
+  
+  .number-tile:hover {
+    box-shadow: 
+      0 6px 8px -1px rgba(0, 0, 0, 0.4),
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+      0 0 12px rgba(153, 69, 255, 0.6);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+  
+  /* Floating Points Animation */
+  .floating-points {
+    position: absolute;
+    font-weight: 900;
+    font-size: 1.125rem;
+    pointer-events: none;
+    z-index: 100;
+    animation: floatUp 1.5s ease-out forwards;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(8px);
+    border: 1px solid;
+  }
+  
+  .points-positive {
+    color: #14F195;
+    background: linear-gradient(135deg, rgba(20, 241, 149, 0.2) 0%, rgba(0, 212, 170, 0.15) 100%);
+    border-color: rgba(20, 241, 149, 0.4);
+    text-shadow: 
+      0 0 8px rgba(20, 241, 149, 0.6),
+      0 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 12px rgba(20, 241, 149, 0.4);
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.3),
+      0 0 12px rgba(20, 241, 149, 0.3);
+  }
+  
+  .points-negative {
+    color: #FF6B6B;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(229, 85, 85, 0.15) 100%);
+    border-color: rgba(255, 107, 107, 0.4);
+    text-shadow: 
+      0 0 8px rgba(255, 107, 107, 0.6),
+      0 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 12px rgba(255, 107, 107, 0.4);
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.3),
+      0 0 12px rgba(255, 107, 107, 0.3);
+  }
+  
+  .points-bonus {
+    color: #F5BC41;
+    font-size: 1.25rem;
+    background: linear-gradient(135deg, rgba(245, 188, 65, 0.25) 0%, rgba(245, 188, 65, 0.15) 100%);
+    border-color: rgba(245, 188, 65, 0.5);
+    text-shadow: 
+      0 0 12px rgba(245, 188, 65, 0.9),
+      0 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 16px rgba(245, 188, 65, 0.6);
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.4),
+      0 0 16px rgba(245, 188, 65, 0.5);
+  }
+  
+  @keyframes floatUp {
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(0.8);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(-10px) scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-30px) scale(1.05);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-80px) scale(0.9);
+    }
   }
 }

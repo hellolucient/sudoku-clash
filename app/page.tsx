@@ -1,47 +1,37 @@
 "use client"
 
-import { useState } from "react"
-import SudokuGame from "@/components/sudoku-game"
-import FloatingPoints from "@/components/floating-points"
-import ProfileManagement from "@/components/profile-management"
+import { useState } from 'react';
+import ProfileManagement from '@/components/profile-management';
+import SudokuGame from '@/components/sudoku-game';
 
-export default function Home() {
-  const [gameState, setGameState] = useState<{
-    isStarted: boolean;
-    difficulty: "easy" | "medium" | "hard";
-  }>({
-    isStarted: false,
-    difficulty: "medium"
-  });
+export default function HomePage() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
 
-  const handleStartGame = (difficulty: "easy" | "medium" | "hard") => {
-    setGameState({
-      isStarted: true,
-      difficulty
-    });
+  const handleStartGame = (selectedDifficulty: "easy" | "medium" | "hard") => {
+    setDifficulty(selectedDifficulty);
+    setGameStarted(true);
   };
 
   const handleExitGame = () => {
-    setGameState(prev => ({
-      ...prev,
-      isStarted: false
-    }));
+    setGameStarted(false);
   };
 
-  return (
-    <main className="flex min-h-screen flex-col items-center p-1 md:p-2">
-      <div className="w-full max-w-md mx-auto">
-        <h1 className="text-xl md:text-2xl font-bold text-center mb-1 text-[#4B3418] drop-shadow-lg bg-[#F9EED7]/80 py-1 px-4 rounded-lg border-2 border-[#8C653C] wooden-border shadow-xl">
-          SUDOKU CLASH
-        </h1>
-        {!gameState.isStarted ? (
-          <ProfileManagement onStartGame={handleStartGame} />
-        ) : (
-          <SudokuGame onExit={handleExitGame} difficulty={gameState.difficulty} />
-        )}
-        <FloatingPoints />
+  if (gameStarted) {
+    return (
+      <div className="h-screen bg-gradient-to-b from-[#0D1117] to-[#1a1a2e] p-2 overflow-y-auto">
+        <div className="max-w-md mx-auto min-h-full flex flex-col pb-safe">
+          <SudokuGame onExit={handleExitGame} difficulty={difficulty} />
+        </div>
       </div>
-    </main>
-  )
-}
+    );
+  }
 
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#0D1117] to-[#1a1a2e] flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <ProfileManagement onStartGame={handleStartGame} />
+      </div>
+    </div>
+  );
+}

@@ -1,41 +1,41 @@
-import type { Metadata, Viewport } from 'next'
-import './globals.css'
-import { PlayerProfileProvider } from '../contexts/player-profile-context'
-import SoundManager from '@/components/sound-manager'
+import { WalletProvider } from '@/components/wallet-provider';
+import { PlayerProfileProvider } from '@/contexts/player-profile-context';
+import { ThemeProvider } from '@/components/theme-provider';
+import '@/styles/globals.css';
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Sudoku Clash',
   description: 'A competitive twist on the classic Sudoku puzzle',
-  generator: 'v0.dev',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Sudoku Clash',
-  },
-}
+};
 
-export const viewport: Viewport = {
+export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#F5BC41',
-}
+  themeColor: '#0D1117',
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <PlayerProfileProvider>
-          {children}
-          <SoundManager />
-        </PlayerProfileProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+        >
+          <WalletProvider>
+            <PlayerProfileProvider>
+              {children}
+            </PlayerProfileProvider>
+          </WalletProvider>
+        </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

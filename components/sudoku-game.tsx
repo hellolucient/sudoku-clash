@@ -15,6 +15,7 @@ import PowerUpButton from "./power-up-button"
 import PowerUpNotification from "./power-up-notification"
 import BonusTimer from "./bonus-timer"
 import MuteButton from "./mute-button"
+import FloatingPoints from "./floating-points"
 
 type Player = {
   name: string
@@ -1035,31 +1036,41 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
 
   // Update the message area and score display for better contrast
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 max-h-screen overflow-y-auto items-center pb-safe">
       {gameState && (
         <>
+          {/* SUDOKU CLASH Header Banner */}
+          <div className="w-full max-w-sm">
+            <div className="bg-gradient-to-r from-[#9945FF] to-[#7C3AED] rounded-lg p-1.5 text-center shadow-lg border border-[#14F195]/30">
+              <h1 className="text-white font-bold text-sm md:text-base uppercase tracking-wide">
+                SUDOKU CLASH
+              </h1>
+            </div>
+          </div>
+
+          {/* Player Info Section */}
           {profile && (
-            <div className="w-full mb-1">
-              <div className="bg-[#F9EED7]/90 rounded-xl p-2 border border-[#8C653C]">
+            <div className="w-full max-w-sm">
+              <div className="bg-[#1a1a2e] rounded-lg p-1 border border-[#14F195]/30">
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-[#4B3418] font-bold">{profile.name}</span>
-                    <span className="ml-2 px-2 py-0.5 bg-[#F5BC41] text-[#4B3418] text-xs font-bold rounded-full">
+                    <span className="text-white font-bold text-xs">{profile.name}</span>
+                    <span className="ml-1.5 px-1.5 py-0.5 bg-[#14F195] text-[#0D1117] text-xs font-bold rounded-full">
                       Level {profile.level}
                     </span>
                   </div>
-                  <div className="text-xs text-[#6B4D28]">
+                  <div className="text-xs text-[#14F195]">
                     XP: {profile.experience}/{profile.experienceToNextLevel}
                   </div>
                 </div>
               </div>
             </div>
           )}
-          <div className="flex justify-between items-center p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C] relative">
-            <div className="text-sm md:text-base font-bold text-[#4B3418]">
-              <span className="text-[#1B998B]">YOU:</span> {gameState.players[0].score}
+          <div className="w-full max-w-sm flex justify-between items-center p-1 bg-[#1a1a2e] rounded-lg shadow-lg border border-[#14F195]/30 relative">
+            <div className="text-xs font-bold text-white">
+              <span className="text-[#14F195]">YOU:</span> {gameState.players[0].score}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {gameState.isBonusActive && gameState.bonusEndTime && (
                 <BonusTimer
                   endTime={gameState.bonusEndTime}
@@ -1087,12 +1098,12 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
                 }} 
               />
             </div>
-            <div className="text-sm md:text-base font-bold text-[#4B3418]">
-              <span className="text-[#CC7A4D]">CPU:</span> {gameState.players[1].score}
+            <div className="text-xs font-bold text-white">
+              <span className="text-[#FF6B6B]">CPU:</span> {gameState.players[1].score}
             </div>
           </div>
 
-          <div className="flex justify-center gap-2 p-1 md:p-2 bg-[#F9EED7]/90 rounded-xl shadow-lg border border-[#8C653C]">
+          <div className="w-full max-w-sm flex justify-center gap-1 p-1 bg-[#1a1a2e] rounded-lg shadow-lg border border-[#14F195]/30">
             <PowerUpButton
               type="peek"
               count={gameState.powerUps[0].peek}
@@ -1119,29 +1130,33 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
             />
           </div>
 
-          <div className="p-1 bg-[#F9EED7]/90 rounded-xl mb-1 border-l-4 border-[#F5BC41] shadow-lg">
-            <p className="text-xs text-[#4B3418] font-medium">{gameState.message}</p>
+          {/* Instruction Banner */}
+          <div className="w-full max-w-sm p-1 bg-gradient-to-r from-[#14F195] to-[#00D4AA] rounded-lg shadow-lg border border-[#14F195]/50">
+            <p className="text-xs text-[#0D1117] font-medium text-center">{gameState.message}</p>
           </div>
 
-          <div ref={boardRef}>
-            <SudokuBoard
-              board={gameState.board}
-              onCellSelect={handleCellSelect}
-              selectedCell={selectedCell}
-              invalidCell={invalidCell}
-              computerSelectedCell={computerSelectedCell}
-              completedSections={completedSections}
-              currentPlayer={gameState.currentPlayer}
-              gameOver={gameState.gameOver}
-              selectedNumber={selectedNumber}
-              revealedCell={gameState.revealedCell}
-              starCell={gameState.starCell}
-              isBonusActive={gameState.isBonusActive}
-            />
+          <div ref={boardRef} className="flex justify-center flex-shrink-0 w-full max-w-sm">
+            <div className="w-full">
+              <SudokuBoard
+                board={gameState.board}
+                onCellSelect={handleCellSelect}
+                selectedCell={selectedCell}
+                invalidCell={invalidCell}
+                computerSelectedCell={computerSelectedCell}
+                completedSections={completedSections}
+                currentPlayer={gameState.currentPlayer}
+                gameOver={gameState.gameOver}
+                selectedNumber={selectedNumber}
+                revealedCell={gameState.revealedCell}
+                starCell={gameState.starCell}
+                isBonusActive={gameState.isBonusActive}
+              />
+            </div>
           </div>
 
-          <div className="mt-1">
-            <h3 className="text-xs md:text-sm font-bold mb-1 text-white bg-gradient-to-r from-[#B58853] to-[#9E7142] px-2 py-0.5 rounded-lg inline-block shadow-md">
+          {/* Player Hand Section */}
+          <div className="w-full max-w-sm mt-0.5 flex flex-col items-center">
+            <h3 className="text-xs font-bold mb-0.5 text-[#14F195]">
               YOUR HAND
             </h3>
             <PlayerHand
@@ -1153,31 +1168,37 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
             />
           </div>
 
-          <div className="mt-1 flex justify-between text-xs">
-            <div className="bg-[#F9EED7]/90 text-[#4B3418] font-bold px-2 py-0.5 rounded-full border border-[#8C653C]">
+          {/* Footer with Pool and CPU info */}
+          <div className="w-full max-w-sm mt-0.5 flex justify-between text-xs">
+            <div className="bg-[#1a1a2e] text-[#14F195] font-bold px-2 py-0.5 rounded-full border border-[#14F195]/30">
               Pool: {gameState.pool.length}
             </div>
-            <div className="bg-[#F9EED7]/90 text-[#4B3418] font-bold px-2 py-0.5 rounded-full border border-[#8C653C]">
+            <div className="bg-[#1a1a2e] text-[#14F195] font-bold px-2 py-0.5 rounded-full border border-[#14F195]/30">
               CPU: {gameState.players[1].hand.length}
             </div>
           </div>
 
-          {gameState.gameOver && (
-            <Button
-              onClick={startNewGame}
-              className="mt-2 bg-gradient-to-r from-[#CC7A4D] to-[#F37B60] hover:from-[#B56E45] hover:to-[#E56F55] text-white font-bold shadow-lg hover:shadow-xl transition-all border border-[#8C653C]"
-            >
-              PLAY AGAIN
-            </Button>
+          {/* Exit Button */}
+          {!gameState.gameOver && (
+            <div className="w-full max-w-sm mt-0.5 mb-2 flex justify-center">
+              <Button
+                onClick={onExit}
+                className="bg-gradient-to-r from-[#9945FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold uppercase shadow-lg hover:shadow-xl transition-all rounded-lg px-3 py-1 text-xs"
+              >
+                EXIT GAME
+              </Button>
+            </div>
           )}
 
-          {!gameState.gameOver && (
-            <Button
-              onClick={onExit}
-              className="mt-2 bg-gradient-to-r from-[#CC7A4D] to-[#F37B60] hover:from-[#B56E45] hover:to-[#E56F55] text-white font-bold shadow-lg hover:shadow-xl transition-all border border-[#8C653C]"
-            >
-              EXIT GAME
-            </Button>
+          {gameState.gameOver && (
+            <div className="w-full max-w-sm mt-0.5 mb-2 flex justify-center">
+              <Button
+                onClick={startNewGame}
+                className="bg-gradient-to-r from-[#9945FF] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold uppercase shadow-lg hover:shadow-xl transition-all rounded-lg px-3 py-1 text-xs"
+              >
+                PLAY AGAIN
+              </Button>
+            </div>
           )}
 
           <VictoryCelebration 
@@ -1207,6 +1228,8 @@ export default function SudokuGame({ onExit, difficulty }: SudokuGameProps) {
             onClose={() => setPowerUpNotification(prev => ({ ...prev, isVisible: false }))}
             gameState={gameState}
           />
+          
+          <FloatingPoints />
         </>
       )}
     </div>
