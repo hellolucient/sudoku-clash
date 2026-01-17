@@ -153,7 +153,6 @@ export default function SudokuBoard({
                   isComputer &&
                     "z-20 bg-[#FF6B6B]/30",
                   isInvalid && "z-10",
-                  isCompleted && "animate-completed-flash",
                   !gameOver &&
                     currentPlayer === 0 &&
                     "cursor-pointer"
@@ -163,6 +162,11 @@ export default function SudokuBoard({
                 {/* Add an overlay div for highlighting same numbers */}
                 {isSameNum && (
                   <div className="absolute inset-0 bg-[#14F195]/60 border-2 border-[#14F195] z-5 rounded-lg" />
+                )}
+                
+                {/* Completed section flash overlay */}
+                {isCompleted && (
+                  <div className="absolute inset-0 animate-completed-flash rounded-lg z-30 pointer-events-none" />
                 )}
                 
                 {/* Cell content - large numbers for tiles */}

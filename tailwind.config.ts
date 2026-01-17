@@ -68,10 +68,34 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "flash-number": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.8", transform: "scale(1.1)" },
+        },
+        "completed-flash": {
+          "0%, 100%": { 
+            backgroundColor: "rgba(20, 241, 149, 0)",
+            boxShadow: "0 0 0px rgba(20, 241, 149, 0)"
+          },
+          "25%": { 
+            backgroundColor: "rgba(20, 241, 149, 0.5)",
+            boxShadow: "0 0 20px rgba(20, 241, 149, 0.8), inset 0 0 20px rgba(20, 241, 149, 0.3)"
+          },
+          "50%": { 
+            backgroundColor: "rgba(20, 241, 149, 0.7)",
+            boxShadow: "0 0 30px rgba(20, 241, 149, 1), inset 0 0 30px rgba(20, 241, 149, 0.5)"
+          },
+          "75%": { 
+            backgroundColor: "rgba(20, 241, 149, 0.5)",
+            boxShadow: "0 0 20px rgba(20, 241, 149, 0.8), inset 0 0 20px rgba(20, 241, 149, 0.3)"
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "flash-number": "flash-number 0.3s ease-in-out",
+        "completed-flash": "completed-flash 1.5s ease-in-out 3",
       },
     },
   },
