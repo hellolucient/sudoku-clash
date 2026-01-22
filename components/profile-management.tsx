@@ -22,6 +22,7 @@ const ProfileCreationForm: React.FC = () => {
   const { setVisible } = useWalletModal();
   const [playerName, setPlayerName] = useState('');
   const [isConnectingWallet, setIsConnectingWallet] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   
   // When wallet connects, create profile automatically
   useEffect(() => {
@@ -31,8 +32,24 @@ const ProfileCreationForm: React.FC = () => {
       const walletName = `Wallet ${shortAddress}`;
       createProfile(walletName, publicKey.toString());
       setIsConnectingWallet(false);
+      setConnectionError(null);
     }
   }, [connected, publicKey, isConnectingWallet, createProfile]);
+  
+  // Reset connecting state when connection attempt ends (success or failure)
+  useEffect(() => {
+    if (!connecting && isConnectingWallet && !connected) {
+      // Connection attempt finished but didn't connect
+      // This handles the case where user rejected or connection failed
+      // Small delay to allow wallet adapter to process
+      const timer = setTimeout(() => {
+        setIsConnectingWallet(false);
+        // Connection was attempted but didn't succeed - user likely rejected
+        setConnectionError('Connection was cancelled. You can try again or enter your name instead.');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [connecting, isConnectingWallet, connected]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,18 +60,27 @@ const ProfileCreationForm: React.FC = () => {
   
   const handleSignInWithWallet = async () => {
     setIsConnectingWallet(true);
+    setConnectionError(null);
     try {
       if (connected && publicKey) {
         // Already connected, create profile
         const shortAddress = `${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}`;
         const walletName = `Wallet ${shortAddress}`;
         createProfile(walletName, publicKey.toString());
+        setIsConnectingWallet(false);
       } else {
-        // Open wallet modal to connect
+        // Open wallet modal - it will handle the connection
+        // The useEffect hooks will detect success/failure
         setVisible(true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error connecting wallet:', error);
+      // Check if it's a user rejection
+      if (error?.code === 4001 || error?.message?.includes('rejected') || error?.message?.includes('User rejected')) {
+        setConnectionError('Connection was cancelled. You can try again or enter your name instead.');
+      } else {
+        setConnectionError('Failed to connect wallet. Please try again or enter your name instead.');
+      }
       setIsConnectingWallet(false);
     }
   };
@@ -94,6 +120,12 @@ const ProfileCreationForm: React.FC = () => {
         >
           {connecting || isConnectingWallet ? 'Connecting...' : walletButtonText}
         </Button>
+        
+        {connectionError && (
+          <div className="mt-2 p-2 bg-[#FF6B6B]/20 border border-[#FF6B6B]/40 rounded text-[#FF6B6B] text-sm">
+            {connectionError}
+          </div>
+        )}
         
         {playerName.trim().length > 0 && (
           <Button
